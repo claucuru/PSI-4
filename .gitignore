@@ -1,0 +1,4 @@
+p3_env/
+myenv/
+venv/
+*.pyc

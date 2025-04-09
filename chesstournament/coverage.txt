@@ -1,0 +1,56 @@
+Name                                                                                        Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------------------------------------------------
+chess_models/__init__.py                                                                        0      0   100%
+chess_models/admin.py                                                                           1      0   100%
+chess_models/apps.py                                                                            4      0   100%
+chess_models/management/commands/populate.py                                                   94      6    94%   81-82, 134, 137-140
+chess_models/migrations/0001_initial.py                                                         5      0   100%
+chess_models/migrations/0002_alter_player_id.py                                                 4      0   100%
+chess_models/migrations/0003_referee_referee_unique_referee_number.py                           4      0   100%
+chess_models/migrations/0004_remove_referee_unique_referee_number_and_more.py                   4      0   100%
+chess_models/migrations/0005_tournament_round.py                                                6      0   100%
+chess_models/migrations/0006_rankingsystemclass_tournament_administrativeuser_and_more.py       7      0   100%
+chess_models/migrations/0007_alter_tournament_referee.py                                        5      0   100%
+chess_models/migrations/0008_alter_tournament_referee.py                                        5      0   100%
+chess_models/migrations/0009_alter_player_unique_together.py                                    4      0   100%
+chess_models/migrations/0010_game.py                                                            5      0   100%
+chess_models/migrations/0011_alter_tournament_board_type_and_more.py                            4      0   100%
+chess_models/migrations/0012_alter_game_black_alter_game_white.py                               5      0   100%
+chess_models/migrations/0013_alter_game_result.py                                               4      0   100%
+chess_models/migrations/0014_alter_round_tournament.py                                          5      0   100%
+chess_models/migrations/0015_alter_tournament_id.py                                             4      0   100%
+chess_models/migrations/0016_alter_tournament_id.py                                             4      0   100%
+chess_models/migrations/0017_alter_tournament_rankinglist.py                                    4      0   100%
+chess_models/migrations/0018_alter_tournament_rankinglist.py                                    4      0   100%
+chess_models/migrations/0019_alter_tournament_players.py                                        4      0   100%
+chess_models/migrations/0020_alter_player_id.py                                                 4      0   100%
+chess_models/migrations/0021_alter_tournament_id.py                                             4      0   100%
+chess_models/migrations/0022_alter_tournament_id.py                                             4      0   100%
+chess_models/migrations/0023_alter_tournament_id.py                                             4      0   100%
+chess_models/migrations/0024_alter_tournament_administrativeuser.py                             6      0   100%
+chess_models/migrations/__init__.py                                                             0      0   100%
+chess_models/models.py                                                                          0      0   100%
+chess_models/models/__init__.py                                                                 8      0   100%
+chess_models/models/constants.py                                                               41      0   100%
+chess_models/models/game.py                                                                    87      0   100%
+chess_models/models/other_models.py                                                             0      0   100%
+chess_models/models/player.py                                                                  64      0   100%
+chess_models/models/referee.py                                                                 10      0   100%
+chess_models/models/round.py                                                                   11      0   100%
+chess_models/models/tournament.py                                                             178      1    99%   25
+chess_models/models/utils.py                                                                    0      0   100%
+chess_models/views.py                                                                           0      0   100%
+-------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                         607      7    99%
+Name                         Stmts   Miss  Cover   Missing
+----------------------------------------------------------
+api/__init__.py                  0      0   100%
+api/admin.py                    11      0   100%
+api/apps.py                      4      0   100%
+api/migrations/__init__.py       0      0   100%
+api/models.py                    0      0   100%
+api/serializers.py              31      0   100%
+api/urls.py                     11      0   100%
+api/views.py                   325      7    98%   245, 275, 303, 419-421, 477
+----------------------------------------------------------
+TOTAL                          382      7    98%
