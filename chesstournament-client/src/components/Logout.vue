@@ -61,7 +61,14 @@
   </script>
   
   <style scoped>
+  html, body {
+    margin: 0;
+    padding: 0;
+
+  }
   .logout-container {
+    min-width: 100vw;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
