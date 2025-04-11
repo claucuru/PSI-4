@@ -1,10 +1,10 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import CreateTournamentView from '../components/CreateTournament.vue'
 import HomeView from '../components/Home1.vue'
 import LoginView from '../components/Login.vue'
 import LogoutSuccessView from '../components/Logout.vue'
-import { h } from 'vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,8 +24,13 @@ const router = createRouter({
       path: '/logout-success',
       name: 'logout-success',
       component: LogoutSuccessView
+    },
+    {
+      path:'/createtournament',
+      name:'createtournament',
+      component: CreateTournamentView
     }
-    // Añade aquí más rutas según sea necesario
+    //Añade aquí más rutas según sea necesario
   ]
 })
 

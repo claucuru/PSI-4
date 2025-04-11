@@ -8,16 +8,16 @@
         <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
       </div>
     </div>
-    
+
     <div class="main-content">
       <div class="container">
         <div class="tournaments-header">
           <h2 class="section-title">Torneos disponibles</h2>
           
           <div class="search-bar">
-            <input 
-              type="text" 
-              v-model="searchQuery" 
+            <input
+              type="text"
+              v-model="searchQuery"
               placeholder="Buscar torneos por nombre..."
               @keyup.enter="handleSearch"
               class="search-input"
