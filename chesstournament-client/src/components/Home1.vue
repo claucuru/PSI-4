@@ -1,3 +1,4 @@
+
 <template>
   <div class="home-page">
     <HeaderComponent />
@@ -202,9 +203,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import HeaderComponent from './Header.vue'
 import axios from 'axios'
+import { computed, onMounted, ref } from 'vue'
+import HeaderComponent from './Header.vue'
 
 export default {
   name: 'HomeView',

@@ -91,9 +91,9 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/stores/auth'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'LoginView',
@@ -113,7 +113,7 @@ export default {
         await authStore.login(username.value, password.value)
         
         // Redirigir al usuario a la página principal después del inicio de sesión exitoso
-        router.push('/')
+        router.push({ name: 'home2'})
       } catch (err) {
         error.value = err.response?.data?.non_field_errors?.[0] || 
                       'Error al iniciar sesión. Por favor, verifica tus credenciales.'

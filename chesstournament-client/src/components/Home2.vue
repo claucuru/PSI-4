@@ -6,6 +6,13 @@
         <div class="hero-content">
           <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
           <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
+          <router-link to="/createtournament" class ="create-tournament-btn">
+            Crea un torneo
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </router-link>
         </div>
       </div>
       
@@ -202,12 +209,12 @@
   </template>
   
   <script>
-  import { ref, computed, onMounted } from 'vue'
-  import HeaderComponent from './Header.vue'
   import axios from 'axios'
+import { computed, onMounted, ref } from 'vue'
+import HeaderComponent from './Header.vue'
   
   export default {
-    name: 'HomeView',
+    name: 'HomeView2',
     components: {
       HeaderComponent
     },
@@ -421,7 +428,61 @@
     display: flex;
     flex-direction: column;
   }
+
+  .create-tournament-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 2px solid white;
+    border-radius: 50px;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 14px 32px;
+    margin-top: 30px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
   
+  .create-tournament-btn svg {
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+  }
+  
+  .create-tournament-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .create-tournament-btn:hover svg {
+    transform: scale(1.1);
+  }
+  
+  /* Efecto para cuando el botón está siendo presionado */
+  .create-tournament-btn:active {
+    transform: translateY(0);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .create-tournament-btn {
+      font-size: 16px;
+      padding: 12px 24px;
+      margin-top: 20px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .create-tournament-btn {
+      font-size: 15px;
+      padding: 10px 20px;
+    }
+  }
+    
   .hero-section {
     background: linear-gradient(135deg, #a96fc0 0%, #ba8cce 100%);
     padding: 20px 10px;
