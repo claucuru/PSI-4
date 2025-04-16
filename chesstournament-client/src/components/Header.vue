@@ -9,14 +9,23 @@
       
       <nav class="main-nav">
         <router-link to="/" class="nav-link" exact-active-class="active">Inicio</router-link>
-        <router-link to="/torneos" class="nav-link" active-class="active">Torneos</router-link>
-        <router-link to="/rankings" class="nav-link" active-class="active">Rankings</router-link>
-        <router-link to="/noticias" class="nav-link" active-class="active">Noticias</router-link>
-        <router-link to="/contacto" class="nav-link" active-class="active">Contacto</router-link>
+        <router-link to="/faq" class="nav-link" active-class="active">FAQ</router-link>
       </nav>
       
       <div class="header-right">
         <template v-if="isAuthenticated">
+          <router-link 
+            v-if="isAdmin && $route.path === '/'" 
+            to="/createtournament" 
+            class="create-tournament-btn"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Crear Torneo
+          </router-link>
+          
           <div class="user-menu" @click="toggleUserMenu" ref="userMenuTrigger">
             <span class="user-avatar">
               <span class="user-initial">{{ userInitial }}</span>
@@ -91,16 +100,21 @@
     <div class="mobile-menu" :class="{ 'active': showMobileMenu }">
       <nav class="mobile-nav">
         <router-link to="/" class="mobile-nav-link" exact-active-class="active" @click="closeMobileMenu">Inicio</router-link>
-        <router-link to="/torneos" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">Torneos</router-link>
-        <router-link to="/rankings" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">Rankings</router-link>
-        <router-link to="/noticias" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">Noticias</router-link>
-        <router-link to="/contacto" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">Contacto</router-link>
+        <router-link to="/faq" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">FAQ</router-link>
         
         <template v-if="isAuthenticated">
           <div class="mobile-divider"></div>
           <router-link to="/perfil" class="mobile-nav-link" @click="closeMobileMenu">Mi perfil</router-link>
           <router-link to="/mis-torneos" class="mobile-nav-link" @click="closeMobileMenu">Mis torneos</router-link>
           <router-link to="/admin" class="mobile-nav-link" v-if="isAdmin" @click="closeMobileMenu">Administración</router-link>
+          <router-link 
+            v-if="isAdmin" 
+            to="/createtournament" 
+            class="mobile-nav-link" 
+            @click="closeMobileMenu"
+          >
+            Crear Torneo
+          </router-link>
           <a href="#" class="mobile-nav-link logout" @click.prevent="handleLogout">Cerrar sesión</a>
         </template>
         <template v-else>
@@ -252,6 +266,7 @@ export default {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
 .login-btn {
@@ -273,6 +288,28 @@ export default {
 }
 
 .login-icon {
+  margin-right: 8px;
+}
+
+.create-tournament-btn {
+  background-color: #9b59b6;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.create-tournament-btn:hover {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
+}
+
+.create-tournament-btn svg {
   margin-right: 8px;
 }
 
@@ -433,6 +470,16 @@ export default {
   
   .mobile-menu {
     display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .create-tournament-btn span {
+    display: none;
+  }
+  
+  .create-tournament-btn svg {
+    margin-right: 0;
   }
 }
 

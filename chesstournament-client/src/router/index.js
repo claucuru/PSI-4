@@ -6,6 +6,8 @@ import HomeView from '../components/Home1.vue'
 import HomeView2 from '../components/Home2.vue'
 import LoginView from '../components/Login.vue'
 import LogoutSuccessView from '../components/Logout.vue'
+import TournamentConfirmation from '../components/TournamentInfo.vue'
+import Faq from '../components/Faq.vue'
 import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
@@ -37,8 +39,18 @@ const router = createRouter({
       path:'/createtournament',
       name:'createtournament',
       component: CreateTournamentView
-    }
-    //Añade aquí más rutas según sea necesario
+    },
+    {
+      path: '/torneos/confirmacion',
+      name: 'TournamentConfirmation',
+      component: TournamentConfirmation,
+      props: true
+    },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: Faq
+    },
   ]
 })
 
