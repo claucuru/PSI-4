@@ -113,7 +113,7 @@ export default {
         await authStore.login(username.value, password.value)
         
         // Redirigir al usuario a la página principal después del inicio de sesión exitoso
-        router.push({ name: 'home2'})
+        router.push({ name: 'adminhome'})
       } catch (err) {
         error.value = err.response?.data?.non_field_errors?.[0] || 
                       'Error al iniciar sesión. Por favor, verifica tus credenciales.'

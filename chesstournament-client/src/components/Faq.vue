@@ -255,8 +255,7 @@
         if (searchQuery.value.trim()) {
           const searchTerms = searchQuery.value.toLowerCase().trim()
           result = result.filter(q => 
-            q.question.toLowerCase().includes(searchTerms) || 
-            q.answer.toLowerCase().includes(searchTerms)
+            q.question.toLowerCase().includes(searchTerms)
           )
         }
         

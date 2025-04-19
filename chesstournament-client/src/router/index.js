@@ -6,8 +6,10 @@ import HomeView from '../components/Home1.vue'
 import HomeView2 from '../components/Home2.vue'
 import LoginView from '../components/Login.vue'
 import LogoutSuccessView from '../components/Logout.vue'
-import TournamentConfirmation from '../components/TournamentInfo.vue'
+import TournamentConfirmation from '../components/TournamentConfirmation.vue'
+import TournamentDetails from '../components/TournamentDetails.vue'
 import Faq from '../components/Faq.vue'
+import Perfil from '../components/Perfil.vue'
 import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
@@ -25,7 +27,7 @@ const router = createRouter({
       meta: { requiresGuest: true }
     },
     {
-      path: '/home2',
+      path: '/adminhome',
       name: 'home2',
       component: HomeView2,
       meta: { requiresAuth: true}
@@ -50,6 +52,17 @@ const router = createRouter({
       path: '/faq',
       name: 'faq',
       component: Faq
+    },
+    {
+      path: '/torneos/:id',
+      name: 'tournament-details',
+      component: TournamentDetails,
+    },
+    {
+      path: '/perfil',
+      name: 'perfil',
+      component: Perfil,
+      meta: { requiresAuth: true }
     },
   ]
 })

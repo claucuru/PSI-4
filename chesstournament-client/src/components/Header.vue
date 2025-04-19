@@ -13,9 +13,24 @@
       </nav>
       
       <div class="header-right">
-        <template v-if="isAuthenticated">
+        <!-- Mostrar iniciar sesión en home1 incluso si el usuario está autenticado -->
+        <template v-if="isInHomePage">
+          <router-link to="/log-in" class="login-btn" v-if="$route.name !== 'login'">
+            <span class="login-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+            </span>
+            Iniciar sesión
+          </router-link>
+        </template>
+        
+        <!-- Mostrar menú de usuario solo cuando NO estamos en home1 -->
+        <template v-else-if="isAuthenticated">
           <router-link 
-            v-if="isAdmin && $route.path === '/'" 
+            v-if="isAdmin && $route.path === '/home2'" 
             to="/createtournament" 
             class="create-tournament-btn"
           >
@@ -74,6 +89,7 @@
             </div>
           </div>
         </template>
+        <!-- Para cualquier otra página donde el usuario no está autenticado -->
         <template v-else>
           <router-link to="/log-in" class="login-btn" v-if="$route.name !== 'login'">
             <span class="login-icon">
@@ -102,7 +118,8 @@
         <router-link to="/" class="mobile-nav-link" exact-active-class="active" @click="closeMobileMenu">Inicio</router-link>
         <router-link to="/faq" class="mobile-nav-link" active-class="active" @click="closeMobileMenu">FAQ</router-link>
         
-        <template v-if="isAuthenticated">
+        <!-- Menú móvil también condicionado a no estar en home1 -->
+        <template v-if="!isInHomePage && isAuthenticated">
           <div class="mobile-divider"></div>
           <router-link to="/perfil" class="mobile-nav-link" @click="closeMobileMenu">Mi perfil</router-link>
           <router-link to="/mis-torneos" class="mobile-nav-link" @click="closeMobileMenu">Mis torneos</router-link>
@@ -130,14 +147,15 @@
 
 <script>
 import { useAuthStore } from '@/stores/auth'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 export default {
   name: 'HeaderComponent',
   setup() {
     const authStore = useAuthStore()
     const router = useRouter()
+    const route = useRoute()
     
     const showUserMenu = ref(false)
     const showMobileMenu = ref(false)
@@ -147,6 +165,16 @@ export default {
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const username = computed(() => authStore.user?.username || 'Usuario')
     const isAdmin = computed(() => authStore.user?.is_staff || false)
+    
+    // Verificar si estamos en la página home1
+    const isInHomePage = computed(() => route.path === '/' || route.name === 'home1')
+    
+    // Redirigir a la página home2 si el usuario está autenticado y está intentando acceder a home1
+    watch(() => [isAuthenticated.value, route.path], ([isAuth, path]) => {
+      if (isAuth && path === '/' && !router.currentRoute.value.meta.allowAuthenticatedUsers) {
+        router.push('/adminhome')
+      }
+    }, { immediate: true })
     
     const userInitial = computed(() => {
       if (!username.value) return 'U'
@@ -202,7 +230,8 @@ export default {
       toggleUserMenu,
       toggleMobileMenu,
       closeMobileMenu,
-      handleLogout
+      handleLogout,
+      isInHomePage
     }
   }
 }
