@@ -1,377 +1,285 @@
 <template>
-    <div class="profile-container">
-      <div class="profile-background">
-        <div class="profile-header">
-          <div class="chess-pattern"></div>
-          <div class="profile-header-content">
-            <img 
-              src="../components/icons/icono.png"
-              class="chess-piece-icon"
-              alt="Chess Piece" 
-              data-cy="profile-chess-icon"
-            />
-            <h1 class="profile-brand">TournamentMaster</h1>
-          </div>
+  <div class="profile-container">
+    <div class="profile-background">
+      <div class="profile-header">
+        <div class="chess-pattern"></div>
+        <div class="profile-header-content">
+          <img 
+            src="../components/icons/icono.png"
+            class="chess-piece-icon"
+            alt="Chess Piece" 
+            data-cy="profile-chess-icon"
+          />
+          <h1 class="profile-brand">TournamentMaster</h1>
         </div>
-        <div class="profile-content">
-          <div class="profile-card">
-            <h1 class="profile-title">Mi Perfil</h1>
-            <p class="profile-subtitle">Información personal y preferencias</p>
-            
-            <div v-if="error" class="error-message" data-cy="profile-error">
-              {{ error }}
-            </div>
-            
-            <div v-if="successMessage" class="success-message" data-cy="profile-success">
-              {{ successMessage }}
-            </div>
-            
-            <div class="profile-avatar-section">
-              <div class="profile-avatar">
-                <span v-if="!user.photoUrl" class="avatar-placeholder">
-                  {{ getUserInitials() }}
-                </span>
-                <img v-else :src="user.photoUrl" alt="Foto de perfil" />
-              </div>
-              <button class="change-photo-button" @click="triggerFileInput">
-                Cambiar foto
-              </button>
-              <input 
-                type="file" 
-                ref="fileInput" 
-                style="display: none" 
-                accept="image/*" 
-                @change="handleFileChange" 
-              />
-            </div>
-            
-            <form @submit.prevent="saveProfile" class="profile-form">
-              <div class="form-group">
-                <label for="username">Nombre de usuario</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </span>
-                  <input 
-                    type="text" 
-                    id="username" 
-                    v-model="user.username" 
-                    placeholder="Nombre de usuario"
-                    data-cy="username-input"
-                    disabled
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="name">Nombre completo</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </span>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    v-model="user.name" 
-                    placeholder="Tu nombre completo"
-                    data-cy="name-input"
-                    required
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                      <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
-                  </span>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    v-model="user.email" 
-                    placeholder="Tu correo electrónico"
-                    data-cy="email-input"
-                    required
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="lichessUsername">ID de Lichess</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                      <path d="M2 17l10 5 10-5"></path>
-                      <path d="M2 12l10 5 10-5"></path>
-                    </svg>
-                  </span>
-                  <input 
-                    type="text" 
-                    id="lichessUsername" 
-                    v-model="user.lichessUsername" 
-                    placeholder="Tu nombre de usuario en Lichess"
-                    data-cy="lichess-input"
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="fideId">ID FIDE (opcional)</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </span>
-                  <input 
-                    type="text" 
-                    id="fideId" 
-                    v-model="user.fideId" 
-                    placeholder="Tu identificador FIDE (si tienes)"
-                    data-cy="fide-input"
-                  >
-                </div>
-              </div>
-              
-              <h2 class="section-title">Cambiar contraseña</h2>
-              
-              <div class="form-group">
-                <label for="currentPassword">Contraseña actual</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </span>
-                  <input 
-                    type="password" 
-                    id="currentPassword" 
-                    v-model="passwordData.currentPassword" 
-                    placeholder="Introduce tu contraseña actual"
-                    data-cy="current-password-input"
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="newPassword">Nueva contraseña</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </span>
-                  <input 
-                    type="password" 
-                    id="newPassword" 
-                    v-model="passwordData.newPassword" 
-                    placeholder="Introduce tu nueva contraseña"
-                    data-cy="new-password-input"
-                  >
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="confirmPassword">Confirmar nueva contraseña</label>
-                <div class="input-container">
-                  <span class="input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                  </span>
-                  <input 
-                    type="password" 
-                    id="confirmPassword" 
-                    v-model="passwordData.confirmPassword" 
-                    placeholder="Confirma tu nueva contraseña"
-                    data-cy="confirm-password-input"
-                  >
-                </div>
-              </div>
-              
-              <div class="form-actions">
-                <button 
-                  type="submit" 
-                  class="save-button" 
-                  data-cy="save-button"
-                  :disabled="isLoading"
-                >
-                  <span v-if="isLoading" class="loading-spinner"></span>
-                  {{ isLoading ? 'Guardando...' : 'Guardar cambios' }}
-                </button>
-                
-                <router-link to="/admin/home" class="cancel-button">
-                  Cancelar
-                </router-link>
-              </div>
-            </form>
+      </div>
+      <div class="profile-content">
+        <div class="profile-card">
+          <h1 class="profile-title">Mi Perfil</h1>
+          <p class="profile-subtitle">Información personal y preferencias</p>
+          
+          <div v-if="error" class="error-message" data-cy="profile-error">
+            {{ error }}
           </div>
+          
+          <div v-if="successMessage" class="success-message" data-cy="profile-success">
+            {{ successMessage }}
+          </div>
+          
+          <div class="profile-avatar-section">
+            <div class="profile-avatar">
+              <span v-if="!user.photoUrl" class="avatar-placeholder">
+                {{ getUserInitials() }}
+              </span>
+              <img v-else :src="user.photoUrl" alt="Foto de perfil" />
+            </div>
+            <button class="change-photo-button" @click="triggerFileInput">
+              Cambiar foto
+            </button>
+            <input 
+              type="file" 
+              ref="fileInput" 
+              style="display: none" 
+              accept="image/*" 
+              @change="handleFileChange" 
+            />
+          </div>
+          
+          <form @submit.prevent="saveProfile" class="profile-form">
+            <div class="form-group">
+              <label for="username">Nombre de usuario</label>
+              <div class="input-container">
+                <span class="input-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </span>
+                <input 
+                  type="text" 
+                  id="username" 
+                  v-model="user.username" 
+                  placeholder="Nombre de usuario"
+                  data-cy="username-input"
+                  disabled
+                >
+              </div>
+            </div>
+            
+            <h2 class="section-title">Cambiar contraseña</h2>
+            
+            <div class="form-group">
+              <label for="currentPassword">Contraseña actual</label>
+              <div class="input-container">
+                <span class="input-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                <input 
+                  type="password" 
+                  id="currentPassword" 
+                  v-model="passwordData.currentPassword" 
+                  placeholder="Introduce tu contraseña actual"
+                  data-cy="current-password-input"
+                >
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="newPassword">Nueva contraseña</label>
+              <div class="input-container">
+                <span class="input-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                <input 
+                  type="password" 
+                  id="newPassword" 
+                  v-model="passwordData.newPassword" 
+                  placeholder="Introduce tu nueva contraseña"
+                  data-cy="new-password-input"
+                >
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="confirmPassword">Confirmar nueva contraseña</label>
+              <div class="input-container">
+                <span class="input-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                <input 
+                  type="password" 
+                  id="confirmPassword" 
+                  v-model="passwordData.confirmPassword" 
+                  placeholder="Confirma tu nueva contraseña"
+                  data-cy="confirm-password-input"
+                >
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="save-button" 
+                data-cy="save-button"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading" class="loading-spinner"></span>
+                {{ isLoading ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+              
+              <router-link to="/admin/home" class="cancel-button">
+                Cancelar
+              </router-link>
+            </div>
+          </form>
         </div>
       </div>
     </div>
+  </div>
 </template>
-  
+
 <script>
-  import { useAuthStore } from '@/stores/auth'
-  import { ref, onMounted } from 'vue'
-  import { useRouter } from 'vue-router'
-  
-  export default {
-    name: 'PerfilView',
-    setup() {
-      const user = ref({
-        username: '',
-        name: '',
-        email: '',
-        lichessUsername: '',
-        fideId: '',
-        photoUrl: null
-      })
-      
-      const passwordData = ref({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      })
-      
-      const error = ref('')
-      const successMessage = ref('')
-      const isLoading = ref(false)
-      const fileInput = ref(null)
-      const authStore = useAuthStore()
-      const router = useRouter()
-      
-      onMounted(async () => {
-        // Obtener datos del usuario actual
-        try {
-          isLoading.value = true
-          // Aquí iría la llamada a la API para obtener el perfil
-          // Simulamos datos para el ejemplo
-          const userData = await fetchUserProfile()
-          user.value = { ...userData }
-        } catch (err) {
-          error.value = 'No se pudo cargar la información del perfil.'
-          console.error('Error al cargar perfil:', err)
-        } finally {
-          isLoading.value = false
+import { useAuthStore } from '@/stores/auth'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+export default {
+  name: 'PerfilView',
+  setup() {
+    const user = ref({
+      username: '',
+      photoUrl: null
+    })
+    
+    const passwordData = ref({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    })
+    
+    const error = ref('')
+    const successMessage = ref('')
+    const isLoading = ref(false)
+    const fileInput = ref(null)
+    const authStore = useAuthStore()
+    const router = useRouter()
+    
+    onMounted(async () => {
+      try {
+        isLoading.value = true
+        // Obtener datos del usuario desde el store de autenticación
+        user.value = {
+          username: authStore.user?.username || '',
+          photoUrl: authStore.user?.photoUrl || null
         }
-      })
-      
-      // Función simulada para obtener el perfil
-      const fetchUserProfile = async () => {
-        // En producción, esto sería una llamada a tu API
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve({
-              username: authStore.user?.username || 'usuario_ajedrez',
-              name: 'Usuario de Ejemplo',
-              email: 'ejemplo@tournamentmaster.com',
-              lichessUsername: 'maestro_del_tablero',
-              fideId: '12345678',
-              photoUrl: null
-            })
-          }, 500)
-        })
+      } catch (err) {
+        error.value = 'No se pudo cargar la información del perfil.'
+        console.error('Error al cargar perfil:', err)
+      } finally {
+        isLoading.value = false
       }
+    })
+    
+    const getUserInitials = () => {
+      if (!user.value.username) return '?'
+      return user.value.username
+        .split(' ')[0] // Tomar solo la primera palabra del nombre de usuario
+        .charAt(0)     // Tomar la primera letra
+        .toUpperCase() // Convertirla a mayúscula
+    }
+    
+    const triggerFileInput = () => {
+      fileInput.value.click()
+    }
+    
+    const handleFileChange = (event) => {
+      const file = event.target.files[0]
+      if (!file) return
       
-      const getUserInitials = () => {
-        if (!user.value.name) return '?'
-        return user.value.name
-          .split(' ')
-          .map(name => name[0])
-          .join('')
-          .toUpperCase()
-          .substring(0, 2)
+      // Convertir la imagen a base64 para almacenarla
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        user.value.photoUrl = e.target.result
+        // Preferiblemente, aquí subirías la imagen al servidor
+        // y obtendrías la URL para almacenarla en el store
       }
-      
-      const triggerFileInput = () => {
-        fileInput.value.click()
-      }
-      
-      const handleFileChange = (event) => {
-        const file = event.target.files[0]
-        if (!file) return
+      reader.readAsDataURL(file)
+    }
+    
+    const saveProfile = async () => {
+      try {
+        error.value = ''
+        successMessage.value = ''
+        isLoading.value = true
         
-        // Aquí podrías subir la imagen a tu servidor
-        // Por ahora solo simulamos una vista previa local
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          user.value.photoUrl = e.target.result
-        }
-        reader.readAsDataURL(file)
-      }
-      
-      const saveProfile = async () => {
-        try {
-          error.value = ''
-          successMessage.value = ''
-          isLoading.value = true
-          
-          // Validar contraseñas si se intenta cambiar
-          if (passwordData.value.newPassword || passwordData.value.currentPassword) {
-            if (!passwordData.value.currentPassword) {
-              error.value = 'Debes introducir tu contraseña actual para cambiarla.'
-              isLoading.value = false
-              return
-            }
-            
-            if (passwordData.value.newPassword !== passwordData.value.confirmPassword) {
-              error.value = 'Las nuevas contraseñas no coinciden.'
-              isLoading.value = false
-              return
-            }
+        // Validar contraseñas si se intenta cambiar
+        if (passwordData.value.newPassword || passwordData.value.currentPassword) {
+          if (!passwordData.value.currentPassword) {
+            error.value = 'Debes introducir tu contraseña actual para cambiarla.'
+            isLoading.value = false
+            return
           }
           
-          // Aquí iría la llamada a la API para guardar los cambios
-          // Simulamos una espera
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          // Simular éxito
-          successMessage.value = 'Perfil actualizado correctamente.'
-          // Limpiar los campos de contraseña
-          passwordData.value = {
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
+          if (passwordData.value.newPassword !== passwordData.value.confirmPassword) {
+            error.value = 'Las nuevas contraseñas no coinciden.'
+            isLoading.value = false
+            return
           }
-        } catch (err) {
-          error.value = err.response?.data?.message || 
-                        'Error al actualizar el perfil. Por favor, inténtalo de nuevo.'
-          console.error('Error al guardar perfil:', err)
-        } finally {
-          isLoading.value = false
+          
+          // Aquí iría la llamada a la API para cambiar la contraseña
+          // await authStore.changePassword(passwordData.value)
         }
-      }
-      
-      return {
-        user,
-        passwordData,
-        error,
-        successMessage,
-        isLoading,
-        fileInput,
-        getUserInitials,
-        triggerFileInput,
-        handleFileChange,
-        saveProfile
+        
+        // Actualizar la foto en el store de autenticación
+        // para que se refleje en toda la aplicación
+        if (user.value.photoUrl) {
+          await authStore.updateUserPhoto(user.value.photoUrl)
+        }
+        
+        // Simular espera para la operación
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Mostrar mensaje de éxito
+        successMessage.value = 'Perfil actualizado correctamente.'
+        
+        // Limpiar los campos de contraseña
+        passwordData.value = {
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }
+      } catch (err) {
+        error.value = err.response?.data?.message || 
+                      'Error al actualizar el perfil. Por favor, inténtalo de nuevo.'
+        console.error('Error al guardar perfil:', err)
+      } finally {
+        isLoading.value = false
       }
     }
+    
+    return {
+      user,
+      passwordData,
+      error,
+      successMessage,
+      isLoading,
+      fileInput,
+      getUserInitials,
+      triggerFileInput,
+      handleFileChange,
+      saveProfile
+    }
   }
+}
 </script>
   
 <style scoped>

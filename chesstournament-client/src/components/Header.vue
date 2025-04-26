@@ -42,9 +42,11 @@
           </router-link>
           
           <div class="user-menu" @click="toggleUserMenu" ref="userMenuTrigger">
-            <span class="user-avatar">
-              <span class="user-initial">{{ userInitial }}</span>
-            </span>
+            <div class="user-avatar">
+              <!-- Mostrar imagen de perfil si existe, si no mostrar inicial -->
+              <img v-if="userPhotoUrl" :src="userPhotoUrl" alt="Foto de perfil" class="user-photo" />
+              <span v-else class="user-initial">{{ userInitial }}</span>
+            </div>
             <span class="user-name">{{ username }}</span>
             <span class="dropdown-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -59,16 +61,6 @@
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 Mi perfil
-              </router-link>
-              <router-link to="/mis-torneos" class="dropdown-item">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                  <line x1="6" y1="1" x2="6" y2="4"></line>
-                  <line x1="10" y1="1" x2="10" y2="4"></line>
-                  <line x1="14" y1="1" x2="14" y2="4"></line>
-                </svg>
-                Mis torneos
               </router-link>
               <router-link to="/admin" class="dropdown-item" v-if="isAdmin">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -166,6 +158,11 @@ export default {
     const username = computed(() => authStore.user?.username || 'Usuario')
     const isAdmin = computed(() => authStore.user?.is_staff || false)
     
+    // Nueva propiedad computada para obtener la URL de la foto de perfil
+    const userPhotoUrl = computed(() => {
+      return authStore.user?.photoUrl || null
+    })
+    
     // Verificar si estamos en la página home1
     const isInHomePage = computed(() => route.path === '/' || route.name === 'home1')
     
@@ -223,6 +220,7 @@ export default {
       username,
       isAdmin,
       userInitial,
+      userPhotoUrl, // Añadimos la nueva propiedad computada al return
       showUserMenu,
       showMobileMenu,
       userMenuTrigger,
@@ -366,11 +364,19 @@ export default {
   width: 36px;
   height: 36px;
   margin-right: 10px;
+  overflow: hidden; /* Para que la imagen no se salga del círculo */
 }
 
 .user-initial {
   font-size: 16px;
   font-weight: 600;
+}
+
+/* Estilo para la foto de perfil */
+.user-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-name {

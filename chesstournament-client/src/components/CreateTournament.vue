@@ -47,9 +47,7 @@
                         <select v-model="tournament.pairing_system">
                             <option value="" disabled selected>Seleccione un sistema</option>
                             <option value="SW">Suizo</option>
-                            <option value="RR">Round Robin</option>
-                            <option value="KO">Eliminatoria</option>
-                            <option value="TM">Por equipos</option>
+                            <option value="SR">Round Robin</option>
                         </select>
                     </div>
                 </div>
@@ -241,7 +239,7 @@ export default {
         
         async validateLichessUsers() {
             // Solo validar si el tipo de tablero es Lichess
-            if (this.tournament.board_type !== 'LI') {
+            if (this.tournament.board_type !== 'LIC') {
                 return true;
             }
             
@@ -284,7 +282,7 @@ export default {
         },
         
         validatePlayerEmails() {
-            if (this.tournament.board_type !== 'OT') {
+            if (this.tournament.board_type !== 'OTB') {
                 return true;
             }
             
@@ -320,6 +318,43 @@ export default {
             
             return true;
         },
+
+        // Función para generar rondas después de crear un torneo
+        async createTournamentRounds(tournamentId, token) {
+            try {
+                const response = await axios.post(
+                'http://localhost:8000/api/v1/create_round/',
+                {
+                    tournament_id: tournamentId
+                },
+                {
+                    headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json'
+                    }
+                }
+                );
+                
+                if (response.data.result) {
+                return {
+                    success: true,
+                    message: response.data.message
+                };
+                } else {
+                return {
+                    success: false,
+                    message: response.data.message || 'Error al crear las rondas del torneo.'
+                };
+                }
+            } catch (error) {
+                console.error('Error al crear rondas:', error);
+                return {
+                success: false,
+                message: error.response?.data?.message || 'Ocurrió un error al generar las rondas del torneo.'
+                };
+            }
+        },
+
         
         async createTournament() {
             this.isLoading = true;
@@ -338,13 +373,13 @@ export default {
             
             try {
                 // Validar usuarios según el tipo de tablero
-                if (this.tournament.board_type === 'LI') {
+                if (this.tournament.board_type === 'LIC') {
                     const usersValid = await this.validateLichessUsers();
                     if (!usersValid) {
                         this.isLoading = false;
                         return;
                     }
-                } else if (this.tournament.board_type === 'OT') {
+                } else if (this.tournament.board_type === 'OTB') {
                     // Validar emails para torneo presencial
                     const emailsValid = this.validatePlayerEmails();
                     if (!emailsValid) {
@@ -366,10 +401,8 @@ export default {
                     start_date: this.tournament.start_date
                 };
 
-                // Obtener la lista de jugadores
-                tournamentData.players = this.playersText.split('\n')
-                    .map(name => name.trim())
-                    .filter(name => name.length > 0);
+                // Añadir jugadores directamente como texto, que es lo que espera la API
+                tournamentData.players = this.playersText;
 
                 // Agregar los métodos de ranking al objeto
                 tournamentData.ranking_methods = this.tournament.ranking_methods.map((method, index) => {
@@ -380,7 +413,7 @@ export default {
                 });
                 
                 // Agregar información de emails para torneos presenciales
-                if (this.tournament.board_type === 'OT') {
+                if (this.tournament.board_type === 'OTB') {
                     tournamentData.playerEmails = {};
                     this.playersList.forEach((player, index) => {
                         if (index < this.playerEmails.length) {
@@ -405,20 +438,27 @@ export default {
                 );
 
                 if (response && response.data) {
-                this.successMessage = '¡Torneo creado exitosamente!';
-                
-                // Guardar los datos del torneo en localStorage como respaldo
-                localStorage.setItem('lastCreatedTournament', JSON.stringify(response.data));
 
-                    router.push({
-                    name: 'TournamentConfirmation',  
-                    params: {
-                        tournament: response.data
+                    // Torneo creado exitosamente, ahora generar las rondas
+                    const tournamentId = response.data.id;
+                    const roundsResult = await this.createTournamentRounds(
+                        tournamentId, 
+                        this.authStore.getToken
+                    );
+                    
+                    if (roundsResult.success) {
+                        this.successMessage = '¡Torneo creado exitosamente con sus rondas!';
+                    } else {
+                        this.successMessage = '¡Torneo creado! Sin embargo, hubo un problema al generar las rondas: ' + roundsResult.message;
                     }
-                    });
-                }
+                    
+                    // Guardar los datos del torneo en localStorage como respaldo
+                    localStorage.setItem('lastCreatedTournament', JSON.stringify(response.data));
 
-                
+                    router.push(`/torneos/${tournamentId}/confirmacion`);
+                }
+            } catch (error) {
+                // Añadido el bloque catch que faltaba
                 // Manejar específicamente errores de autenticación
                 if (error.response && error.response.status === 401) {
                     this.errorMessage = 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.';
@@ -427,7 +467,7 @@ export default {
                     }, 2000);
                 } else {
                     this.errorMessage = error.response?.data?.message || 
-                                      'Ocurrió un error al crear el torneo. Por favor, inténtelo de nuevo.';
+                                    'Ocurrió un error al crear el torneo. Por favor, inténtelo de nuevo.';
                 }
             } finally {
                 this.isLoading = false;

@@ -87,12 +87,13 @@ class Player(models.Model):
 
         # Solo actualizamos los ratings de lichess si el username existe
         # y la bandera está activa
-        if self.lichess_username and update_lichess_ratings:
+        if self.lichess_username and self.lichess_username.strip() and update_lichess_ratings:
             self.get_lichess_user_ratings()
 
     def check_lichess_user_exists(self):
         """Verifica si el usuario de lichess existe."""
-        if not self.lichess_username:
+        if not self.lichess_username or not self.lichess_username.strip():
+            # Si el username está vacío o es solo espacios, no existe
             return False
 
         url = f"https://lichess.org/api/user/{self.lichess_username}"

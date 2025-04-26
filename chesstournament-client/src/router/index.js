@@ -43,8 +43,8 @@ const router = createRouter({
       component: CreateTournamentView
     },
     {
-      path: '/torneos/confirmacion',
-      name: 'TournamentConfirmation',
+      path: '/torneos/:id/confirmacion',
+      name: 'tournament-confirmation',
       component: TournamentConfirmation,
       props: true
     },
