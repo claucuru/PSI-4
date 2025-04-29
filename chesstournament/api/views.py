@@ -7,6 +7,7 @@ de ranking.
 import logging
 import requests
 from django.db import transaction
+from django.utils import timezone
 from djoser.views import UserViewSet
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.exceptions import ValidationError
@@ -825,14 +826,14 @@ class UpdateOTBGameAPIView(APIView):
                 content_type='application/json'
             )
 
-
 class AdminUpdateGameAPIView(APIView):
-    """APIView para que administradores actualicen partidas."""
+    """APIView para que administradores actualicen partidas de cualquier tipo."""
     permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer]
 
     def post(self, request):
         """Permite a un administrador actualizar una partida.
+        Dependiendo de los parámetros, redirige a la vista de Lichess o OTB.
 
         Args:
             request: Objeto request de Django
@@ -855,18 +856,74 @@ class AdminUpdateGameAPIView(APIView):
                 {"result": False, "message": "Game not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+        # Determinar el tipo de actualización según los parámetros recibidos
+        if 'lichess_game_id' in request.data:
+            # Si tiene lichess_game_id, procesar como actualización de Lichess
+            lichess_game_id = request.data.get('lichess_game_id')
+            
+            if not lichess_game_id:
+                return Response(
+                    {"result": False, "message": "Lichess game ID is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            try:
+                with transaction.atomic():
+                    result = white_username = black_username = None
+                    result_data = game.get_lichess_game_result(lichess_game_id)
+                    result, white_username, black_username = result_data
 
-        # Verificar que el usuario autenticado es el que creó el torneo
-        if game.round.tournament.administrativeUser != request.user:
-            return Response(
-                {"result": False, "message": "Only the user that create "
-                    "the tournament can update it"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+                    game_data = {
+                        'game_id': game.id,
+                        'lichess_game_id': lichess_game_id,
+                        'result': result,
+                        'white_username': white_username,
+                        'black_username': black_username,
+                    }
 
-        # Actualizar el juego con el resultado proporcionado
-        otb_result = request.data.get('otb_result')
-        if otb_result:
+                    game_serializer = GameSerializer(game, data=game_data,
+                                                    partial=True)
+                    game_serializer.is_valid(raise_exception=True)
+                    game_serializer.save()
+
+                    return Response(
+                        {
+                            "result": True,
+                            "message": (
+                                f"Game updated successfully with {game.result}"
+                            )
+                        },
+                        status=status.HTTP_200_OK
+                    )
+
+            except LichessAPIError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except requests.RequestException:
+                return Response(
+                    {
+                        "result": False,
+                        "message": (
+                            f"Failed to fetch data for "
+                            f"game {lichess_game_id} "
+                            f"from Lichess"
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except ValidationError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        elif 'otb_result' in request.data:
+            # Si tiene otb_result, procesar como actualización OTB
+            otb_result = request.data.get('otb_result')
+            
             # Establecer el resultado directamente
             game.result = otb_result
             game.finished = True  # Marcar el juego como finalizado
@@ -876,20 +933,36 @@ class AdminUpdateGameAPIView(APIView):
                 {"result": True, "message": "Game updated successfully"},
                 status=status.HTTP_200_OK
             )
-
-        # Si no se proporciona otb_result, actualizar el juego con otros datos
-        game_data = request.data
-        serializer = GameSerializer(game, data=game_data, partial=True)
-
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(
-                {"result": True, "message": "Game updated successfully"},
-                status=status.HTTP_200_OK
-            )
-        except ValidationError as e:
-            return Response(
-                {"result": False, "message": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            
+        else:
+            # Manejo de la actualización directa de los campos result, finished y update_date
+            try:
+                # Actualizar los campos específicos recibidos en la solicitud
+                if 'result' in request.data:
+                    game.result = request.data.get('result')
+                
+                if 'finished' in request.data:
+                    game.finished = request.data.get('finished')
+                
+                # Gestionar la fecha de actualización si se proporciona
+                game.update_date = timezone.now()
+                if 'update_date' in request.data:
+                    game.update_date = request.data.get('update_date')
+                
+                # Guardar los cambios
+                game.save()
+                
+                return Response(
+                    {"result": True, "message": "Game updated successfully"},
+                    status=status.HTTP_200_OK
+                )
+            except ValidationError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Exception as e:
+                return Response(
+                    {"result": False, "message": f"Error updating game: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )

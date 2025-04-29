@@ -269,7 +269,7 @@ export default {
     };
 
     const goToTournament = () => {
-      router.push(`/torneos/${tournament.value.id}`);
+      router.push(`/tournamentdetail/${tournament.value.id}`);
     };
 
     return {

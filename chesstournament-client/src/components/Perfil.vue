@@ -16,7 +16,7 @@
       <div class="profile-content">
         <div class="profile-card">
           <h1 class="profile-title">Mi Perfil</h1>
-          <p class="profile-subtitle">Información personal y preferencias</p>
+          <p class="profile-subtitle">Información personal y administración</p>
           
           <div v-if="error" class="error-message" data-cy="profile-error">
             {{ error }}
@@ -66,62 +66,64 @@
               </div>
             </div>
             
-            <h2 class="section-title">Cambiar contraseña</h2>
-            
             <div class="form-group">
-              <label for="currentPassword">Contraseña actual</label>
+              <label for="role">Rol de usuario</label>
               <div class="input-container">
                 <span class="input-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
                 </span>
                 <input 
-                  type="password" 
-                  id="currentPassword" 
-                  v-model="passwordData.currentPassword" 
-                  placeholder="Introduce tu contraseña actual"
-                  data-cy="current-password-input"
+                  type="text" 
+                  id="role" 
+                  v-model="user.role" 
+                  placeholder="Rol de usuario"
+                  data-cy="role-input"
+                  disabled
                 >
               </div>
             </div>
             
-            <div class="form-group">
-              <label for="newPassword">Nueva contraseña</label>
-              <div class="input-container">
-                <span class="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                </span>
-                <input 
-                  type="password" 
-                  id="newPassword" 
-                  v-model="passwordData.newPassword" 
-                  placeholder="Introduce tu nueva contraseña"
-                  data-cy="new-password-input"
-                >
-              </div>
-            </div>
+            <h2 class="section-title">Acciones administrativas</h2>
             
-            <div class="form-group">
-              <label for="confirmPassword">Confirmar nueva contraseña</label>
-              <div class="input-container">
-                <span class="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <div class="admin-actions">
+              <div class="admin-action-card">
+                <div class="admin-action-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                </span>
-                <input 
-                  type="password" 
-                  id="confirmPassword" 
-                  v-model="passwordData.confirmPassword" 
-                  placeholder="Confirma tu nueva contraseña"
-                  data-cy="confirm-password-input"
-                >
+                </div>
+                <div class="admin-action-title">Gestionar Usuarios</div>
+              </div>
+              
+              <div class="admin-action-card">
+                <div class="admin-action-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                  </svg>
+                </div>
+                <div class="admin-action-title">Gestionar Torneos</div>
+              </div>
+              
+              
+              <div class="admin-action-card">
+                <div class="admin-action-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                </div>
+                <div class="admin-action-title">Configuración del Sistema</div>
               </div>
             </div>
             
@@ -136,9 +138,9 @@
                 {{ isLoading ? 'Guardando...' : 'Guardar cambios' }}
               </button>
               
-              <router-link to="/admin/home" class="cancel-button">
+              <button type="button" class="cancel-button">
                 Cancelar
-              </router-link>
+              </button>
             </div>
           </form>
         </div>
@@ -150,20 +152,14 @@
 <script>
 import { useAuthStore } from '@/stores/auth'
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 
 export default {
-  name: 'PerfilView',
+  name: 'PerfilAdminView',
   setup() {
     const user = ref({
       username: '',
+      role: '',
       photoUrl: null
-    })
-    
-    const passwordData = ref({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
     })
     
     const error = ref('')
@@ -171,7 +167,6 @@ export default {
     const isLoading = ref(false)
     const fileInput = ref(null)
     const authStore = useAuthStore()
-    const router = useRouter()
     
     onMounted(async () => {
       try {
@@ -179,6 +174,7 @@ export default {
         // Obtener datos del usuario desde el store de autenticación
         user.value = {
           username: authStore.user?.username || '',
+          role: authStore.user?.role || 'Administrador',
           photoUrl: authStore.user?.photoUrl || null
         }
       } catch (err) {
@@ -221,24 +217,6 @@ export default {
         successMessage.value = ''
         isLoading.value = true
         
-        // Validar contraseñas si se intenta cambiar
-        if (passwordData.value.newPassword || passwordData.value.currentPassword) {
-          if (!passwordData.value.currentPassword) {
-            error.value = 'Debes introducir tu contraseña actual para cambiarla.'
-            isLoading.value = false
-            return
-          }
-          
-          if (passwordData.value.newPassword !== passwordData.value.confirmPassword) {
-            error.value = 'Las nuevas contraseñas no coinciden.'
-            isLoading.value = false
-            return
-          }
-          
-          // Aquí iría la llamada a la API para cambiar la contraseña
-          // await authStore.changePassword(passwordData.value)
-        }
-        
         // Actualizar la foto en el store de autenticación
         // para que se refleje en toda la aplicación
         if (user.value.photoUrl) {
@@ -250,13 +228,6 @@ export default {
         
         // Mostrar mensaje de éxito
         successMessage.value = 'Perfil actualizado correctamente.'
-        
-        // Limpiar los campos de contraseña
-        passwordData.value = {
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        }
       } catch (err) {
         error.value = err.response?.data?.message || 
                       'Error al actualizar el perfil. Por favor, inténtalo de nuevo.'
@@ -268,7 +239,6 @@ export default {
     
     return {
       user,
-      passwordData,
       error,
       successMessage,
       isLoading,
@@ -368,6 +338,7 @@ export default {
     font-weight: 700;
     margin-bottom: 10px;
   }
+  
   
   .profile-subtitle {
     color: #9f7ead;
@@ -486,6 +457,51 @@ export default {
     background-color: #f0e6f6;
     cursor: not-allowed;
     opacity: 0.7;
+  }
+  
+  /* Estilos para acciones administrativas */  
+  .admin-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .admin-action-card {
+    background: linear-gradient(135deg, #f9f4fc 0%, #f2eaf8 100%);
+    border-radius: 16px;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s;
+    border: 2px solid #f0e6f6;
+    cursor: pointer;
+  }
+  
+  .admin-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(155, 89, 182, 0.1);
+    border-color: #e1c7f4;
+  }
+  
+  .admin-action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #bb8fce 0%, #9b59b6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    color: white;
+  }
+  
+  .admin-action-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6b5876;
+    text-align: center;
   }
   
   .form-actions {

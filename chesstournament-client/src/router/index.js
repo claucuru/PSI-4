@@ -11,6 +11,7 @@ import TournamentDetails from '../components/TournamentDetails.vue'
 import Faq from '../components/Faq.vue'
 import Perfil from '../components/Perfil.vue'
 import { useAuthStore } from '../stores/auth'
+import TournamentDetails2 from '../components/TournamentDetails2.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,7 +22,7 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/log-in',
+      path: '/login',
       name: 'login',
       component: LoginView,
       meta: { requiresGuest: true }
@@ -33,7 +34,7 @@ const router = createRouter({
       meta: { requiresAuth: true}
     },
     {
-      path: '/logout-success',
+      path: '/logout',
       name: 'logout-success',
       component: LogoutSuccessView
     },
@@ -43,7 +44,7 @@ const router = createRouter({
       component: CreateTournamentView
     },
     {
-      path: '/torneos/:id/confirmacion',
+      path: '/tournament/:id/confirmation',
       name: 'tournament-confirmation',
       component: TournamentConfirmation,
       props: true
@@ -54,12 +55,17 @@ const router = createRouter({
       component: Faq
     },
     {
-      path: '/torneos/:id',
+      path: '/tournamentdetail/:id',
       name: 'tournament-details',
       component: TournamentDetails,
     },
     {
-      path: '/perfil',
+      path: '/tournamentdetail2/:id',
+      name: 'tournament-details',
+      component: TournamentDetails2,
+    },
+    {
+      path: '/profile',
       name: 'perfil',
       component: Perfil,
       meta: { requiresAuth: true }

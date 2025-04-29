@@ -195,8 +195,20 @@
                             </div>
                           </div>
                           
-                          <div class="game-status" :class="game.finished ? 'finished' : 'pending'">
-                            {{ game.finished ? 'Finalizada' : 'Pendiente' }}
+                          
+                          <div class="game-actions">
+                            <div class="game-status" :class="game.finished ? 'finished' : 'pending'">
+                              {{ game.finished ? 'Finalizada' : 'Pendiente' }}
+                            </div>
+                            <button 
+                              class="edit-game-btn" 
+                              @click="openEditGameModal(round.round_id, game)"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                              </svg>
+                              Editar
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -250,6 +262,109 @@
         </div>
       </div>
       
+      <!-- Modal para editar partidas -->
+      <div v-if="showEditGameModal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h3>Editar Partida</h3>
+            <button class="close-modal" @click="showEditGameModal = false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <div v-if="editingGameError" class="edit-game-error">
+              {{ editingGameError }}
+            </div>
+            
+            <div class="edit-game-form">
+              <div class="form-group">
+                <label>Jugador con blancas:</label>
+                <div class="player-info">
+                  <strong>{{ editingGame?.white?.name || 'Sin jugador' }}</strong>
+                  <span v-if="editingGame?.white?.rating" class="rating">
+                    ({{ editingGame.white.rating }})
+                  </span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Jugador con negras:</label>
+                <div class="player-info">
+                  <strong>{{ editingGame?.black?.name || 'Sin jugador' }}</strong>
+                  <span v-if="editingGame?.black?.rating" class="rating">
+                    ({{ editingGame.black.rating }})
+                  </span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Resultado:</label>
+                <select v-model="editingGame.result" class="form-control">
+                  <option value="">-- Seleccionar resultado --</option>
+                  <option value="W">Victoria blancas (1-0)</option>
+                  <option value="B">Victoria negras (0-1)</option>
+                  <option value="D">Tablas (½-½)</option>
+                  <option value="F">Incomparecencia (F-F)</option>
+                  <option value="">Pendiente</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Estado de la partida:</label>
+                <div class="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    id="gameFinished" 
+                    v-model="editingGame.finished"
+                  />
+                  <label for="gameFinished">
+                    {{ editingGame.finished ? 'Finalizada' : 'Pendiente' }}
+                  </label>
+                </div>
+              </div>
+              
+              <div class="form-group" v-if="editingGame.lichess_id">
+                <label>ID de Lichess:</label>
+                <input 
+                  type="text" 
+                  v-model="editingGame.lichess_id" 
+                  class="form-control"
+                  placeholder="ID de la partida en Lichess"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label>Fecha de la partida:</label>
+                <input 
+                  type="date" 
+                  v-model="editingGame.date" 
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="btn btn-cancel" @click="showEditGameModal = false">
+              Cancelar
+            </button>
+            
+            <button 
+              class="btn btn-save" 
+              @click="saveGameChanges()"
+              :disabled="updateGameLoading"
+            >
+              <div v-if="updateGameLoading" class="mini-spinner"></div>
+              <span v-else>Guardar cambios</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <!-- Footer -->
       <footer class="site-footer">
         <div class="container">
@@ -293,7 +408,7 @@
   
   <script>
   import axios from 'axios'
-  import { onMounted, ref, computed } from 'vue'
+  import { onMounted, ref, computed, watch } from 'vue'
   import { useRoute } from 'vue-router'
   import HeaderComponent from './Header.vue'
   
@@ -318,6 +433,13 @@
       const rankingsLoading = ref(false)
       const roundsLoading = ref(false)
       
+      // Estado para la edición de partidas
+      const showEditGameModal = ref(false)
+      const editingGame = ref(null)
+      const editingRoundId = ref(null)
+      const editingGameError = ref(null)
+      const updateGameLoading = ref(false)
+      
       // URL base para solicitudes a la API
       const apiBaseUrl = '/api/v1'
       
@@ -331,6 +453,8 @@
           tournament.value = response.data
           
           console.log('Torneo cargado:', tournament.value)
+
+          
           
           // Cargar datos de la primera pestaña activa
           loadTabData(activeTab.value)
@@ -391,6 +515,70 @@
         }
       }
       
+      // Abrir el modal para editar una partida
+      const openEditGameModal = (roundId, game) => {
+        // Crear una copia profunda del objeto para no modificar directamente el original
+        editingGame.value = JSON.parse(JSON.stringify(game))
+        editingGame.value.id = game.game_id // Asegurarse de que el ID de la partida esté presente
+        editingRoundId.value = roundId
+        editingGameError.value = null
+        showEditGameModal.value = true
+      }
+      
+      // Guardar los cambios de la partida
+      const saveGameChanges = async () => {
+        updateGameLoading.value = true
+        editingGameError.value = null
+        
+        try {
+          // Si el resultado está establecido pero finished es false, actualizar finished a true
+          if (editingGame.value.result && !editingGame.value.finished) {
+            editingGame.value.finished = true
+          }
+          
+          // Enviar los datos actualizados a la API
+          const response = await axios.post(
+                `${apiBaseUrl}/admin_update_game/`,
+                {
+                // Asegúrate de incluir todos los campos necesarios en el cuerpo de la solicitud
+                game_id: editingGame.value.game_id,
+                result: editingGame.value.result,
+                finished: editingGame.value.finished,
+                }
+            )
+          console.log('Partida actualizada correctamente:', response.data)
+          
+          // Actualizar la partida en la lista local
+          if (roundsData.value && roundsData.value.rounds) {
+            const roundIndex = roundsData.value.rounds.rounds.findIndex(r => r.round_id === editingRoundId.value)
+            
+            if (roundIndex !== -1) {
+              const gameIndex = roundsData.value.rounds.rounds[roundIndex].games.findIndex(g => g.game_id === editingGame.value.game_id)
+              
+              if (gameIndex !== -1) {
+                roundsData.value.rounds.rounds[roundIndex].games[gameIndex] = { ...editingGame.value }
+              }
+            }
+          }
+          
+          // Actualizar la clasificación si hay cambios en los resultados
+          loadRankings()
+          
+          // Cerrar el modal
+          showEditGameModal.value = false
+        } catch (error) {
+          console.error('Error al actualizar la partida:', error)
+          
+          if (error.response && error.response.data) {
+            editingGameError.value = error.response.data.detail || 'Error al guardar los cambios. Inténtalo de nuevo.'
+          } else {
+            editingGameError.value = 'Error de conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.'
+          }
+        } finally {
+          updateGameLoading.value = false
+        }
+      }
+      
       // Cargar datos según la pestaña activa
       const loadTabData = (tab) => {
         if (tab === 'players') {
@@ -421,13 +609,10 @@
         
         const now = new Date()
         const startDate = new Date(tournament.start_date)
+        const endDate = tournament.end_date ? new Date(tournament.end_date) : null
         
-        if (startDate > now) return 'proximo'
-        if (!tournament.end_date) return 'en_curso'
-        
-        const endDate = new Date(tournament.end_date)
-        if (endDate < now) return 'finalizado'
-        
+        if (now < startDate) return 'proximo'
+        if (endDate && now > endDate) return 'finalizado'
         return 'en_curso'
       }
       
@@ -500,8 +685,8 @@
       })
       
       // Observar cambios en la pestaña activa
-      const watchActiveTab = () => {
-        loadTabData(activeTab.value)
+      const watchActiveTab = (newTab) => {
+        loadTabData(newTab)
       }
       
       onMounted(() => {
@@ -520,323 +705,329 @@
         playersLoading,
         rankingsLoading,
         roundsLoading,
-        formatDate,
+        showEditGameModal,
+        editingGame,
+        editingRoundId,
+        editingGameError,
         getTournamentStatusClass,
         getTournamentStatusText,
         getTournamentTypeText,
         getPlayerRating,
         formatGameResult,
+        formatDate,
+        openEditGameModal,
+        saveGameChanges,
+        rankingsSorted,
         getGameResultClass,
         watchActiveTab
-      }
-    },
-    watch: {
-      activeTab(newTab) {
-        this.watchActiveTab(newTab)
-      }
+    }
+  },
+  watch: {
+    activeTab(newTab) {
+      this.watchActiveTab(newTab)
     }
   }
-  </script>
-  
-  <style scoped>
-  .tournament-details-page {
-    min-height: 100vh;
-    min-width: 100vw;
-    background-color: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .hero-section {
-    background: linear-gradient(135deg, #a96fc0 0%, #ba8cce 100%);
-    padding: 60px 20px;
-    color: white;
-    text-align: center;
-    flex-shrink: 0;
-  }
-  
-  .hero-content {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .hero-title {
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 12px;
-  }
-  
-  .hero-subtitle {
-    font-size: 18px;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.5;
-  }
-  
-  .main-content {
-    padding: 40px 0;
-    flex-grow: 1;
-  }
-  
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    width: 100%;
-  }
-  
-  .loading-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 0;
-    color: #6b5876;
-  }
-  
-  .loading-state.mini {
-    padding: 40px 0;
-  }
-  
-  .spinner {
-    border: 4px solid rgba(155, 89, 182, 0.1);
-    border-radius: 50%;
-    border-top: 4px solid #9b59b6;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .empty-state {
-    text-align: center;
-    padding: 80px 0;
-    color: #6b5876;
-  }
-  
-  .empty-state.mini {
-    padding: 40px 0;
-  }
-  
-  .empty-state svg {
-    color: #9f7ead;
-    margin-bottom: 20px;
-  }
-  
-  .empty-state h3 {
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  
-  .empty-state p {
-    color: #9f7ead;
-    max-width: 400px;
-    margin: 0 auto;
-    font-size: 16px;
-  }
-  
-  .error-state {
-    text-align: center;
-    padding: 80px 0;
-    color: #e74c3c;
-  }
-  
-  .error-state svg {
-    color: #e74c3c;
-    margin-bottom: 20px;
-  }
-  
-  .error-state h3 {
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  
-  .error-state p {
-    max-width: 400px;
-    margin: 0 auto;
-    font-size: 16px;
-  }
-  
-  /* Estilos para la tarjeta de información del torneo */
-  .tournament-info-card {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    margin-bottom: 30px;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .tournament-status-banner {
-    background-color: #3498db;
-    color: white;
-    font-weight: 600;
-    padding: 10px 20px;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .tournament-status-banner.proximo {
-    background-color: #f39c12;
-  }
-  
-  .tournament-status-banner.en_curso {
-    background-color: #3498db;
-  }
-  
-  .tournament-status-banner.finalizado {
-    background-color: #95a5a6;
-  }
-  
-  .tournament-status-banner.abierto {
-    background-color: #27ae60;
-  }
-  
-  .tournament-info-content {
-    padding: 30px;
-  }
-  
-  .tournament-meta {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-  }
-  
-  .meta-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  
-  .meta-item svg {
-    color: #9b59b6;
-  }
-  
-  .tournament-description h3 {
-    color: #333;
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-  
-  .tournament-description p {
-    color: #666;
-    line-height: 1.6;
-  }
-  
-  /* Estilos para las pestañas */
-  .tabs-container {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-  }
-  
-  .tabs-header {
-    display: flex;
-    border-bottom: 1px solid #e6d5f2;
-    background-color: #f8f5fb;
-  }
-  
-  .tab-button {
-    background-color: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    color: #6b5876;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 15px 25px;
-    transition: all 0.3s;
-  }
-  
-  .tab-button:hover {
-    background-color: #f0e6f7;
-    color: #9b59b6;
-  }
-  
-  .tab-button.active {
-    border-bottom-color: #9b59b6;
-    color: #9b59b6;
-  }
-  
-  .tabs-content {
-    padding: 30px;
-  }
-  
-  /* Estilos para la tabla de participantes */
-  .players-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .players-table th,
-  .players-table td {
-    border-bottom: 1px solid #e6d5f2;
-    padding: 12px 15px;
-    text-align: left;
-  }
-  
-  .players-table th {
-    background-color: #f8f5fb;
-    color: #6b5876;
-    font-weight: 600;
-  }
-  
-  .players-table tr:hover {
-    background-color: #faf7fc;
-  }
-  
-  /* Estilos para las rondas y partidas */
-  .round-card {
-    background-color: #f8f5fb;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    overflow: hidden;
-  }
-  
-  .round-header {
-    background-color: #e6d5f2;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .round-header h3 {
-    color: #6b5876;
-    font-size: 18px;
-    margin: 0;
-  }
-  
-  .round-date {
-    color: #9f7ead;
-    font-size: 14px;
-  }
-  
-  .games-list {
-    padding: 15px;
-  }
-  
-  .game-item {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 15px;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+}
+</script>
 
-/* Continuación de los estilos para game-item */
+<style scoped>
+.tournament-details-page {
+  min-height: 100vh;
+  min-width: 100vw;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #a96fc0 0%, #ba8cce 100%);
+  padding: 60px 20px;
+  color: white;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.main-content {
+  padding: 40px 0;
+  flex-grow: 1;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: #6b5876;
+}
+
+.loading-state.mini {
+  padding: 40px 0;
+}
+
+.spinner {
+  border: 4px solid rgba(155, 89, 182, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #9b59b6;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 0;
+  color: #6b5876;
+}
+
+.empty-state.mini {
+  padding: 40px 0;
+}
+
+.empty-state svg {
+  color: #9f7ead;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  color: #9f7ead;
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 16px;
+}
+
+.error-state {
+  text-align: center;
+  padding: 80px 0;
+  color: #e74c3c;
+}
+
+.error-state svg {
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+.error-state h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.error-state p {
+  max-width: 400px;
+  margin: 0 auto;
+  font-size: 16px;
+}
+
+/* Estilos para la tarjeta de información del torneo */
+.tournament-info-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tournament-status-banner {
+  background-color: #3498db;
+  color: white;
+  font-weight: 600;
+  padding: 10px 20px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tournament-status-banner.proximo {
+  background-color: #f39c12;
+}
+
+.tournament-status-banner.en_curso {
+  background-color: #3498db;
+}
+
+.tournament-status-banner.finalizado {
+  background-color: #95a5a6;
+}
+
+.tournament-status-banner.abierto {
+  background-color: #27ae60;
+}
+
+.tournament-info-content {
+  padding: 30px;
+}
+
+.tournament-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.meta-item svg {
+  color: #9b59b6;
+}
+
+.tournament-description h3 {
+  color: #333;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.tournament-description p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Estilos para las pestañas */
+.tabs-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 1px solid #e6d5f2;
+  background-color: #f8f5fb;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6b5876;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 15px 25px;
+  transition: all 0.3s;
+}
+
+.tab-button:hover {
+  background-color: #f0e6f7;
+  color: #9b59b6;
+}
+
+.tab-button.active {
+  border-bottom-color: #9b59b6;
+  color: #9b59b6;
+}
+
+.tabs-content {
+  padding: 30px;
+}
+
+/* Estilos para la tabla de participantes */
+.players-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.players-table th,
+.players-table td {
+  border-bottom: 1px solid #e6d5f2;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.players-table th {
+  background-color: #f8f5fb;
+  color: #6b5876;
+  font-weight: 600;
+}
+
+.players-table tr:hover {
+  background-color: #faf7fc;
+}
+
+/* Estilos para las rondas y partidas */
+.round-card {
+  background-color: #f8f5fb;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.round-header {
+  background-color: #e6d5f2;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.round-header h3 {
+  color: #6b5876;
+  font-size: 18px;
+  margin: 0;
+}
+
+.round-date {
+  color: #9f7ead;
+  font-size: 14px;
+}
+
+.games-list {
+  padding: 15px;
+}
+
+.game-item {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .game-players {
   display: flex;
   align-items: center;
@@ -999,11 +1190,6 @@
   font-weight: 600;
 }
 
-.author-role {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
 .footer-copyright {
   width: 100%;
   margin-top: 20px;
@@ -1089,5 +1275,300 @@
   }
 }
 
+/* Estilos para el modal de edición de partidas */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e6d5f2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #6b5876;
+  font-size: 20px;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  color: #9f7ead;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-modal:hover {
+  background-color: #f8f5fb;
+  color: #8e44ad;
+}
+
+.modal-body {
+  padding: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.edit-game-error {
+  background-color: #fdeaea;
+  border-left: 4px solid #e74c3c;
+  color: #c0392b;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-game-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #6b5876;
+  font-size: 14px;
+}
+
+.player-info {
+  background-color: #f8f5fb;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid #e6d5f2;
+}
+
+.form-control {
+  background-color: #f8f5fb;
+  border: 1px solid #e6d5f2;
+  border-radius: 6px;
+  color: #6b5876;
+  font-size: 16px;
+  padding: 12px 15px;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #9b59b6;
+  outline: none;
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch label {
+  position: relative;
+  display: inline-block;
+  padding-left: 50px;
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.toggle-switch label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 24px;
+  background-color: #e6d5f2;
+  border-radius: 12px;
+  transition: background-color 0.3s;
+}
+
+.toggle-switch label::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-switch input:checked + label::before {
+  background-color: #9b59b6;
+}
+
+.toggle-switch input:checked + label::after {
+  transform: translateX(16px);
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 1px solid #e6d5f2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-cancel {
+  background-color: #f8f5fb;
+  color: #9f7ead;
+}
+
+.btn-cancel:hover {
+  background-color: #e6d5f2;
+}
+
+.btn-save {
+  background-color: #9b59b6;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #8e44ad;
+}
+
+.btn-save:disabled {
+  background-color: #d2b4e5;
+  cursor: not-allowed;
+}
+
+.mini-spinner {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 2px solid white;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+/* Estilos responsive para el modal */
+@media (max-width: 600px) {
+  .modal-container {
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .modal-overlay {
+    padding: 0;
+  }
+  
+  .form-group {
+    gap: 6px;
+  }
+  
+  .form-control {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  
+  .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Estilos para la edición adicional de acciones en la lista de juegos */
+.game-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.edit-game-btn {
+  background-color: #f7f6ed;
+  border: none;
+  color: #9b59b6;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s;
+}
+
+.edit-game-btn:hover {
+  background-color: #e6d5f2;
+}
+
+.edit-game-btn svg {
+  color: #9b59b6;
+}
+
 </style>
- 

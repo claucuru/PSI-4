@@ -55,7 +55,7 @@
             </span>
             
             <div class="user-dropdown" v-if="showUserMenu" ref="userMenu">
-              <router-link to="/perfil" class="dropdown-item">
+              <router-link to="/profile" class="dropdown-item">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
@@ -113,9 +113,7 @@
         <!-- Menú móvil también condicionado a no estar en home1 -->
         <template v-if="!isInHomePage && isAuthenticated">
           <div class="mobile-divider"></div>
-          <router-link to="/perfil" class="mobile-nav-link" @click="closeMobileMenu">Mi perfil</router-link>
-          <router-link to="/mis-torneos" class="mobile-nav-link" @click="closeMobileMenu">Mis torneos</router-link>
-          <router-link to="/admin" class="mobile-nav-link" v-if="isAdmin" @click="closeMobileMenu">Administración</router-link>
+          <router-link to="/profile" class="mobile-nav-link" @click="closeMobileMenu">Mi perfil</router-link>
           <router-link 
             v-if="isAdmin" 
             to="/createtournament" 
@@ -192,7 +190,7 @@ export default {
     
     const handleLogout = async () => {
       await authStore.logout()
-      router.push('/logout-success')
+      router.push('/logout')
     }
     
     const closeMenuOnOutsideClick = (event) => {

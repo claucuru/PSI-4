@@ -236,22 +236,23 @@ def getBlackWins(tournament, results):
 
     return results
 
-
 def getRanking(tournament):
     from .game import Game
     from .round import Round
-
+    
+    # Obtener las puntuaciones y victorias con negras
     results = getScores(tournament)
     results = getBlackWins(tournament, results)
-
+    
+    # Verificar si el torneo tiene juegos
     tournament_has_games = False
     tournament_rounds = Round.objects.filter(tournament=tournament)
-
     for round in tournament_rounds:
         if Game.objects.filter(round=round).exists():
             tournament_has_games = True
             break
-
+    
+    # Si no hay juegos, retornar un ranking inicial
     if not tournament_has_games:
         players = tournament.players.all()
         ranked_results = {}
@@ -263,34 +264,76 @@ def getRanking(tournament):
                 RankingSystem.BLACKTIMES.value: 0
             }
         return ranked_results
-
-    ranking_criteria = list(
-        tournament.rankingList.values_list('value', flat=True)
-    )
-
-    if RankingSystem.PLAIN_SCORE.value not in ranking_criteria:
-        ranking_criteria.insert(0, RankingSystem.PLAIN_SCORE.value)
-
-    players = tournament.getPlayers(sorted=False)
-
-    def sort_key(player):
-        return tuple(-results[player].get(criterion, 0)
-                     for criterion in ranking_criteria)
-
-    sorted_players = sorted(players, key=sort_key)
-
-    ranked_results = {}
-    current_rank = 1
-
-    for player in sorted_players:
-        ranked_results[player] = {
-            'rank': current_rank,
-            **{k: results[player][k] for k in [
+    
+    # CAMBIO IMPORTANTE: Manejar el caso cuando rankingList está vacío
+    try:
+        ranking_criteria = list(
+            tournament.rankingList.values_list('value', flat=True)
+        )
+        # Si la lista está vacía, usar criterios predeterminados
+        if not ranking_criteria:
+            ranking_criteria = [
                 RankingSystem.PLAIN_SCORE.value,
                 RankingSystem.WINS.value,
                 RankingSystem.BLACKTIMES.value
-            ]}
-        }
+            ]
+    except Exception as e:
+        # En caso de error (tabla no existe, error de relación, etc.)
+        print(f"Error al obtener rankingList: {e}")
+        # Usar criterios predeterminados
+        ranking_criteria = [
+            RankingSystem.PLAIN_SCORE.value,
+            RankingSystem.WINS.value,
+            RankingSystem.BLACKTIMES.value
+        ]
+    
+    # Asegurar que PLAIN_SCORE esté en los criterios
+    if RankingSystem.PLAIN_SCORE.value not in ranking_criteria:
+        ranking_criteria.insert(0, RankingSystem.PLAIN_SCORE.value)
+    
+    players = tournament.getPlayers(sorted=False)
+    
+    def sort_key(player):
+        # Asegurarse de que el jugador existe en los resultados
+        if player not in results:
+            return tuple(0 for _ in ranking_criteria)
+        
+        return tuple(-results[player].get(criterion, 0)
+                 for criterion in ranking_criteria)
+    
+    sorted_players = sorted(players, key=sort_key)
+    
+    ranked_results = {}
+    current_rank = 1
+    for player in sorted_players:
+        # Verificar si el jugador existe en los resultados
+        if player in results:
+            player_results = {
+                'rank': current_rank,
+            }
+            
+            # Agregar solo las claves que existen en los resultados del jugador
+            for k in [
+                RankingSystem.PLAIN_SCORE.value,
+                RankingSystem.WINS.value,
+                RankingSystem.BLACKTIMES.value
+            ]:
+                if k in results[player]:
+                    player_results[k] = results[player][k]
+                else:
+                    # Proporcionar un valor predeterminado
+                    player_results[k] = 0
+                    
+            ranked_results[player] = player_results
+        else:
+            # Manejar el caso donde el jugador no tiene resultados
+            ranked_results[player] = {
+                'rank': current_rank,
+                RankingSystem.PLAIN_SCORE.value: 0,
+                RankingSystem.WINS.value: 0,
+                RankingSystem.BLACKTIMES.value: 0
+            }
+            
         current_rank += 1
-
+    
     return ranked_results

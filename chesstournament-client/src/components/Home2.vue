@@ -120,7 +120,7 @@
                 </div>
                 
                 <div class="tournament-footer">
-                  <router-link :to="`/torneos/${tournament.id}`" class="view-details-btn">
+                  <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn">
                     Ver detalles
                   </router-link>
                 </div>

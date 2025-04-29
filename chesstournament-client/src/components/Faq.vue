@@ -92,16 +92,17 @@
           <div class="contact-support">
             <h3>¿No encontraste lo que buscabas?</h3>
             <p>Si tienes alguna pregunta que no esté respondida aquí, no dudes en contactarnos.</p>
-            <button class="contact-btn" onclick="document.getElementById('contact-form').style.display='block'">
-            Contactar Soporte
-            </button>
+            <!--Nos lleva al footer-->
+            <a href="#footer" class="contact-btn" data-cy="contact-support">
+              Contactar Soporte
+            </a>
 
           </div>
         </div>
       </div>
       
       <!-- Footer -->
-      <footer class="site-footer">
+      <footer class="site-footer" id="footer">
         <div class="container">
           <div class="footer-content">
             <div class="footer-logo">
