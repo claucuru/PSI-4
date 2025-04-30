@@ -38,7 +38,7 @@
                   id="username" 
                   v-model="username" 
                   placeholder="Introduce tu nombre de usuario"
-                  data-cy="username-input"
+                  data-cy="username"
                   required
                 >
               </div>

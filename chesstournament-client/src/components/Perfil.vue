@@ -60,7 +60,7 @@
                   id="username" 
                   v-model="user.username" 
                   placeholder="Nombre de usuario"
-                  data-cy="username-input"
+                  data-cy="username"
                   disabled
                 >
               </div>
@@ -151,7 +151,7 @@
 
 <script>
 import { useAuthStore } from '@/stores/auth'
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 export default {
   name: 'PerfilAdminView',

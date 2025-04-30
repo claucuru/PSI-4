@@ -15,7 +15,7 @@
       <div class="header-right">
         <!-- Mostrar iniciar sesión en home1 incluso si el usuario está autenticado -->
         <template v-if="isInHomePage">
-          <router-link to="/log-in" class="login-btn" v-if="$route.name !== 'login'">
+          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'">
             <span class="login-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -83,7 +83,7 @@
         </template>
         <!-- Para cualquier otra página donde el usuario no está autenticado -->
         <template v-else>
-          <router-link to="/log-in" class="login-btn" v-if="$route.name !== 'login'">
+          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'">
             <span class="login-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -126,7 +126,7 @@
         </template>
         <template v-else>
           <div class="mobile-divider"></div>
-          <router-link to="/log-in" class="mobile-nav-link" @click="closeMobileMenu">
+          <router-link to="/login" class="mobile-nav-link" @click="closeMobileMenu">
             Iniciar sesión
           </router-link>
         </template>
@@ -138,7 +138,7 @@
 <script>
 import { useAuthStore } from '@/stores/auth'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
   name: 'HeaderComponent',
@@ -189,7 +189,7 @@ export default {
     }
     
     const handleLogout = async () => {
-      await authStore.logout()
+      // await authStore.logout()
       router.push('/logout')
     }
     

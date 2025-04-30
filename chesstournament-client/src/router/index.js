@@ -2,16 +2,16 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import CreateTournamentView from '../components/CreateTournament.vue'
+import Faq from '../components/Faq.vue'
 import HomeView from '../components/Home1.vue'
 import HomeView2 from '../components/Home2.vue'
 import LoginView from '../components/Login.vue'
 import LogoutSuccessView from '../components/Logout.vue'
+import Perfil from '../components/Perfil.vue'
 import TournamentConfirmation from '../components/TournamentConfirmation.vue'
 import TournamentDetails from '../components/TournamentDetails.vue'
-import Faq from '../components/Faq.vue'
-import Perfil from '../components/Perfil.vue'
-import { useAuthStore } from '../stores/auth'
 import TournamentDetails2 from '../components/TournamentDetails2.vue'
+import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

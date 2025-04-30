@@ -1,6 +1,6 @@
 // src/stores/auth.js
-import { defineStore } from 'pinia'
 import axios from 'axios'
+import { defineStore } from 'pinia'
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
@@ -92,7 +92,7 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
         
         // Redireccionar a la página de logout
-        router.push('/logout-success')
+        router.push('/logout')
       }
     },
     
