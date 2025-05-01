@@ -13,9 +13,20 @@
       </nav>
       
       <div class="header-right">
+        <!-- Mostrar cerrar sesión -->
+        <template v-if="!isInHomePage  && isAuthenticated">
+          <a href="#" class="logout-btn" @click.prevent="handleLogout" data-cy="logout-cypress-test">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Cerrar sesión
+          </a>
+        </template>
         <!-- Mostrar iniciar sesión en home1 incluso si el usuario está autenticado -->
         <template v-if="isInHomePage">
-          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'">
+          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'" data-cy="login-cypress-test">
             <span class="login-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -30,7 +41,7 @@
         <!-- Mostrar menú de usuario solo cuando NO estamos en home1 -->
         <template v-else-if="isAuthenticated">
           <router-link 
-            v-if="isAdmin && $route.path === '/home2'" 
+            v-if="isAdmin && $route.path === '/home2'"
             to="/createtournament" 
             class="create-tournament-btn"
           >
@@ -46,6 +57,8 @@
               <!-- Mostrar imagen de perfil si existe, si no mostrar inicial -->
               <img v-if="userPhotoUrl" :src="userPhotoUrl" alt="Foto de perfil" class="user-photo" />
               <span v-else class="user-initial">{{ userInitial }}</span>
+              <!-- AÑADIDO -->
+               <span v-if="isAdmin" class="admin-badge" data-cy="admin-log">Hello, you are logged in as an administrator</span>
             </div>
             <span class="user-name">{{ username }}</span>
             <span class="dropdown-icon">
@@ -70,7 +83,7 @@
                 Administración
               </router-link>
               <div class="dropdown-divider"></div>
-              <a href="#" class="dropdown-item logout" @click.prevent="handleLogout">
+              <a href="#" class="dropdown-item logout" @click.prevent="handleLogout" data-cy="logout-cypress-test">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
@@ -83,7 +96,7 @@
         </template>
         <!-- Para cualquier otra página donde el usuario no está autenticado -->
         <template v-else>
-          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'">
+          <router-link to="/login" class="login-btn" v-if="$route.name !== 'login'" data-cy="login-cypress-test">
             <span class="login-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -363,6 +376,25 @@ export default {
   height: 36px;
   margin-right: 10px;
   overflow: hidden; /* Para que la imagen no se salga del círculo */
+  position: relative; /*AÑADIDO */
+}
+
+/*AÑADIDO */
+.admin-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: #9b59b6;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  border: 2px solid white;
 }
 
 .user-initial {

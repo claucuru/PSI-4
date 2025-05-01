@@ -8,7 +8,7 @@
             <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
         </div>
-        <h1 class="logout-title">¡Sesión cerrada!</h1>
+        <h1 class="logout-page" data-cy="logoutPage">Log Out</h1>
         <p class="logout-message">
           Has cerrado sesión correctamente. Serás redirigido a la página de inicio en <span class="countdown">{{ countdown }}</span> segundos.
         </p>
@@ -25,9 +25,9 @@
   </template>
   
   <script>
-  import { ref, onMounted, computed } from 'vue'
-  import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/auth'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
   
   export default {
     name: 'LogoutView',
@@ -92,7 +92,7 @@
     margin-bottom: 20px;
   }
   
-  .logout-title {
+  .logout-page {
     color: #8e44ad;
     font-size: 28px;
     font-weight: 700;

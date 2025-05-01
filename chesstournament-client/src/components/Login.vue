@@ -19,7 +19,7 @@
           <h1 class="login-title">Iniciar sesión</h1>
           <p class="login-subtitle">Acceso a administración de torneos</p>
           
-          <div v-if="error" class="error-message" data-cy="login-error">
+          <div v-if="error" class="error-message" data-cy="error-message">
             {{ error }}
           </div>
           
@@ -58,7 +58,7 @@
                   id="password" 
                   v-model="password" 
                   placeholder="Introduce tu contraseña"
-                  data-cy="password-input"
+                  data-cy="password"
                   required
                 >
               </div>
@@ -115,8 +115,8 @@ export default {
         // Redirigir al usuario a la página principal después del inicio de sesión exitoso
         router.push({ name: 'adminhome'})
       } catch (err) {
-        error.value = err.response?.data?.non_field_errors?.[0] || 
-                      'Error al iniciar sesión. Por favor, verifica tus credenciales.'
+        error.value = err.response?.data?.non_field_errors?.[0] ||
+                      'Error: Invalid username or password'
         console.error('Error de inicio de sesión:', err)
       } finally {
         isLoading.value = false

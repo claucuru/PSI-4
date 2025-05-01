@@ -6,6 +6,7 @@
         <div class="hero-content">
           <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
           <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
+          <div data-cy="admin-log" class="admin-welcome-message">Hello, you are logged in as an administrator</div>
           <router-link to="/createtournament" class ="create-tournament-btn">
             Crea un torneo
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -465,6 +466,20 @@ import HeaderComponent from './Header.vue'
   /* Efecto para cuando el botón está siendo presionado */
   .create-tournament-btn:active {
     transform: translateY(0);
+  }
+
+  /* Admin welcome message */
+  .admin-welcome-message {
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 20px auto;
+    padding: 12px 20px;
+    text-align: center;
+    max-width: 80%;
   }
   
   /* Responsive */

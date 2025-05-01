@@ -15,8 +15,9 @@ module.exports = defineConfig({
   env: {
     username: "y",
     password: "y",
-    python: "/home/roberto/miniconda/envs/chess/bin/python",
+    // python: "/home/roberto/miniconda/envs/chess/bin/python",
+    python: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/p4_env/bin/python3",
 //    manage: "/home/roberto/Docencia/psi/2024-25/chesstournament/chesstournament_server/manage.py",
-    manage: "/home/roberto/Docencia/PSI/psi/2024_25/chesstournament/chesstournament_server/manage.py",
+    manage: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/chesstournament/manage.py",
   },
 });
