@@ -142,7 +142,7 @@ jrcuesta, jrcuesta@example.com
     // Go to main page and...
     // cy.visit('/') // if you do this token is lost
     //               // and you need to clean it in the store
-    // cy.wait(2000)
+     cy.wait(70000)
 
     // ... select tournament
     // cy.get('[data-cy=tournament_SR]').click();

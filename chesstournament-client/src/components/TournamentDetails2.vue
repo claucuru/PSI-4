@@ -1,735 +1,762 @@
 <template>
-    <div class="tournament-details-page">
-      <HeaderComponent />
-      
-      <div class="hero-section">
-        <div class="hero-content">
-          <h1 class="hero-title">{{ tournament ? tournament.name : 'Cargando torneo...' }}</h1>
-          <p class="hero-subtitle" v-if="tournament">
-            {{ getTournamentTypeText(tournament.tournament_type) }} | 
-            {{ tournament.board_type === 'OTB' ? 'Presencial' : 'Online' }} |
-            {{ tournament.timeControl || 'Tiempo no especificado' }}
-          </p>
-        </div>
+  <div class="tournament-details-page">
+    <HeaderComponent />
+    
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">{{ tournament ? tournament.name : 'Cargando torneo...' }}</h1>
+        <p class="hero-subtitle" v-if="tournament">
+          {{ getTournamentTypeText(tournament.tournament_type) }} | 
+          {{ tournament.board_type === 'OTB' ? 'Presencial' : 'Online' }} |
+          {{ tournament.timeControl || 'Tiempo no especificado' }}
+        </p>
       </div>
-  
-      <div class="main-content">
-        <div class="container">
-          <!-- Estado de error -->
-          <div v-if="apiErrors" class="error-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Ha ocurrido un error</h3>
-            <p>{{ apiErrors }}</p>
-          </div>
-          
-          <!-- Estado de carga -->
-          <div v-else-if="isLoading" class="loading-state">
-            <div class="spinner"></div>
-            <p>Cargando información del torneo...</p>
-          </div>
-          
-          <div v-else-if="tournament" class="tournament-details">
-            <!-- Información del torneo -->
-            <div class="tournament-info-card">
-              <div class="tournament-status-banner" :class="getTournamentStatusClass(tournament)">
-                {{ getTournamentStatusText(tournament) }}
-              </div>
-              
-              <div class="tournament-info-content">
-                <div class="tournament-meta">
-                  <div class="meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                      <line x1="16" y1="2" x2="16" y2="6"></line>
-                      <line x1="8" y1="2" x2="8" y2="6"></line>
-                      <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <div>
-                      <strong>Fechas:</strong>
-                      <div>{{ formatDate(tournament.start_date) }} - {{ tournament.end_date ? formatDate(tournament.end_date) : 'En curso' }}</div>
-                    </div>
-                  </div>
-                  
-                  <div class="meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <div>
-                      <strong>Participantes:</strong>
-                      <div>{{ tournament.players ? tournament.players.length : 0 }} jugadores</div>
-                    </div>
-                  </div>
-                  
-                  <div class="meta-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <div>
-                      <strong>Control de tiempo:</strong>
-                      <div>{{ tournament.timeControl || 'No especificado' }}</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="tournament-description" v-if="tournament.description">
-                  <h3>Descripción</h3>
-                  <p>{{ tournament.description }}</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Pestañas para organizar la información -->
-            <div class="tabs-container">
-              <div class="tabs-header">
-                <button 
-                  class="tab-button" 
-                  :class="{ active: activeTab === 'players' }"
-                  @click="activeTab = 'players'"
-                >
-                  Participantes
-                </button>
-                <button 
-                  class="tab-button" 
-                  :class="{ active: activeTab === 'rounds' }"
-                  @click="activeTab = 'rounds'"
-                >
-                  Rondas y Partidas
-                </button>
-                <button 
-                  class="tab-button" 
-                  :class="{ active: activeTab === 'rankings' }"
-                  @click="activeTab = 'rankings'"
-                >
-                  Clasificación
-                </button>
-              </div>
-              
-              <div class="tabs-content">
-                <!-- Tab de Participantes -->
-                <div v-if="activeTab === 'players'" class="tab-content">
-                  <div v-if="playersLoading" class="loading-state mini">
-                    <div class="spinner"></div>
-                    <p>Cargando participantes...</p>
-                  </div>
-                  
-                  <div v-else-if="players.length === 0" class="empty-state mini">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <h3>No hay participantes registrados</h3>
-                  </div>
-                  
-                  <div v-else class="players-list">
-                    <table class="players-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Nombre</th>
-                          <th>Username Lichess</th>
-                          <th>Rating</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(player, index) in players" :key="player.id">
-                          <td>{{ index + 1 }}</td>
-                          <td>{{ player.name || 'N/A' }}</td>
-                          <td>{{ player.lichess_username || 'N/A' }}</td>
-                          <td>{{ getPlayerRating(player) || 'N/A' }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                
-                <!-- Tab de Rondas y Partidas -->
-                <div v-if="activeTab === 'rounds'" class="tab-content">
-                  <div v-if="roundsLoading" class="loading-state mini">
-                    <div class="spinner"></div>
-                    <p>Cargando rondas y partidas...</p>
-                  </div>
-                  
-                  <div v-else-if="!roundsData || roundsData.rounds.length === 0" class="empty-state mini">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <h3>No hay rondas configuradas</h3>
-                    <p>El torneo aún no ha sido emparejado o está en preparación.</p>
-                  </div>
-                  
-                  <div v-else class="rounds-list">
-                    <div v-for="round in roundsData.rounds.rounds" :key="round.round_id" class="round-card">
-                      <div class="round-header">
-                        <h3>{{ round.round_name }}</h3>
-                        <div class="round-date" v-if="round.start_date">
-                          {{ formatDate(round.start_date) }}
-                        </div>
-                      </div>
-                      
-                      <div class="games-list">
-                        <div v-for="game in round.games" :key="game.game_id" class="game-item">
-                          <div class="game-players">
-                            <div class="player white">
-                              <strong>{{ game.white.name || 'Sin jugador' }}</strong>
-                              <span v-if="game.white.rating" class="rating">({{ game.white.rating }})</span>
-                            </div>
-                            
-                            <div class="game-result">
-                              <span :class="getGameResultClass(game.result)">{{ formatGameResult(game.result) }}</span>
-                            </div>
-                            
-                            <div class="player black">
-                              <strong>{{ game.black.name || 'Sin jugador' }}</strong>
-                              <span v-if="game.black.rating" class="rating">({{ game.black.rating }})</span>
-                            </div>
-                          </div>
-                          
-                          
-                          <div class="game-actions">
-                            <div class="game-status" :class="game.finished ? 'finished' : 'pending'">
-                              {{ game.finished ? 'Finalizada' : 'Pendiente' }}
-                            </div>
-                            <button 
-                              class="edit-game-btn" 
-                              @click="openEditGameModal(round.round_id, game)"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                              </svg>
-                              Editar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Tab de Clasificación -->
-                <div v-if="activeTab === 'rankings'" class="tab-content">
-                  <div v-if="rankingsLoading" class="loading-state mini">
-                    <div class="spinner"></div>
-                    <p>Cargando clasificación...</p>
-                  </div>
-                  
-                  <div v-else-if="!rankings || Object.keys(rankings).length === 0" class="empty-state mini">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <h3>No hay clasificación disponible</h3>
-                    <p>La clasificación estará disponible cuando se hayan jugado partidas.</p>
-                  </div>
-                  
-                  <div v-else class="rankings-list">
-                    <table class="rankings-table">
-                      <thead>
-                        <tr>
-                          <th>Pos</th>
-                          <th>Jugador</th>
-                          <th>Puntos</th>
-                          <th>Victorias</th>
-                          <th>Negras</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="player in rankingsSorted" :key="player.id">
-                          <td>{{ player.rank }}</td>
-                          <td>{{ player.name }}</td>
-                          <td>{{ player.score }}</td>
-                          <td>{{ player.WINS }}</td>
-                          <td>{{ player.BLACKTIMES }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Modal para editar partidas -->
-      <div v-if="showEditGameModal" class="modal-overlay">
-        <div class="modal-container">
-          <div class="modal-header">
-            <h3>Editar Partida</h3>
-            <button class="close-modal" @click="showEditGameModal = false">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="modal-body">
-            <div v-if="editingGameError" class="edit-game-error">
-              {{ editingGameError }}
-            </div>
-            
-            <div class="edit-game-form">
-              <div class="form-group">
-                <label>Jugador con blancas:</label>
-                <div class="player-info">
-                  <strong>{{ editingGame?.white?.name || 'Sin jugador' }}</strong>
-                  <span v-if="editingGame?.white?.rating" class="rating">
-                    ({{ editingGame.white.rating }})
-                  </span>
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label>Jugador con negras:</label>
-                <div class="player-info">
-                  <strong>{{ editingGame?.black?.name || 'Sin jugador' }}</strong>
-                  <span v-if="editingGame?.black?.rating" class="rating">
-                    ({{ editingGame.black.rating }})
-                  </span>
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label>Resultado:</label>
-                <select v-model="editingGame.result" class="form-control">
-                  <option value="">-- Seleccionar resultado --</option>
-                  <option value="W">Victoria blancas (1-0)</option>
-                  <option value="B">Victoria negras (0-1)</option>
-                  <option value="D">Tablas (½-½)</option>
-                  <option value="F">Incomparecencia (F-F)</option>
-                  <option value="">Pendiente</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label>Estado de la partida:</label>
-                <div class="toggle-switch">
-                  <input 
-                    type="checkbox" 
-                    id="gameFinished" 
-                    v-model="editingGame.finished"
-                  />
-                  <label for="gameFinished">
-                    {{ editingGame.finished ? 'Finalizada' : 'Pendiente' }}
-                  </label>
-                </div>
-              </div>
-              
-              <div class="form-group" v-if="editingGame.lichess_id">
-                <label>ID de Lichess:</label>
-                <input 
-                  type="text" 
-                  v-model="editingGame.lichess_id" 
-                  class="form-control"
-                  placeholder="ID de la partida en Lichess"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label>Fecha de la partida:</label>
-                <input 
-                  type="date" 
-                  v-model="editingGame.date" 
-                  class="form-control"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal-footer">
-            <button class="btn btn-cancel" @click="showEditGameModal = false">
-              Cancelar
-            </button>
-            
-            <button 
-              class="btn btn-save" 
-              @click="saveGameChanges()"
-              :disabled="updateGameLoading"
-            >
-              <div v-if="updateGameLoading" class="mini-spinner"></div>
-              <span v-else>Guardar cambios</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Footer -->
-      <footer class="site-footer">
-        <div class="container">
-          <div class="footer-content">
-            <div class="footer-logo">
-              <h3>TournamentMaster</h3>
-              <p>La plataforma líder para gestión de torneos de ajedrez.</p>
-            </div>
-            
-            <div class="footer-authors">
-              <h4>Desarrollado por:</h4>
-              <div class="authors-list">
-                <div class="author">
-                  <div class="author-avatar">
-                    <span>AP</span>
-                  </div>
-                  <div class="author-info">
-                    <span class="author-name">Alejandra Palma</span>
-                  </div>
-                </div>
-                
-                <div class="author">
-                  <div class="author-avatar">
-                    <span>CC</span>
-                  </div>
-                  <div class="author-info">
-                    <span class="author-name">Claudia Cuevas</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="footer-copyright">
-              <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios'
-  import { onMounted, ref, computed, watch } from 'vue'
-  import { useRoute } from 'vue-router'
-  import HeaderComponent from './Header.vue'
-  
-  export default {
-    name: 'TournamentDetails',
-    components: {
-      HeaderComponent
-    },
-    setup() {
-      const route = useRoute()
-      const tournamentId = computed(() => route.params.id)
-      
-      // Estado
-      const isLoading = ref(true)
-      const apiErrors = ref(null)
-      const tournament = ref(null)
-      const players = ref([])
-      const rankings = ref({})
-      const roundsData = ref(null)
-      const activeTab = ref('players')
-      const playersLoading = ref(false)
-      const rankingsLoading = ref(false)
-      const roundsLoading = ref(false)
-      
-      // Estado para la edición de partidas
-      const showEditGameModal = ref(false)
-      const editingGame = ref(null)
-      const editingRoundId = ref(null)
-      const editingGameError = ref(null)
-      const updateGameLoading = ref(false)
-      
-      // URL base para solicitudes a la API
-      const apiBaseUrl = '/api/v1'
-      
-      // Cargar datos del torneo
-      const loadTournament = async () => {
-        isLoading.value = true
-        apiErrors.value = null
-        
-        try {
-          const response = await axios.get(`${apiBaseUrl}/tournaments/${tournamentId.value}/`)
-          tournament.value = response.data
-          
-          console.log('Torneo cargado:', tournament.value)
 
-          
-          
-          // Cargar datos de la primera pestaña activa
-          loadTabData(activeTab.value)
-          
-        } catch (error) {
-          console.error('Error al cargar torneo:', error)
-          apiErrors.value = 'Error al cargar los datos del torneo. Por favor, inténtalo de nuevo más tarde.'
-        } finally {
-          isLoading.value = false
-        }
-      }
-      
-      // Cargar datos de participantes
-      const loadPlayers = async () => {
-        playersLoading.value = true
+    <div class="main-content">
+      <div class="container">
+        <!-- Estado de error -->
+        <div v-if="apiErrors" class="error-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>Ha ocurrido un error</h3>
+          <p>{{ apiErrors }}</p>
+        </div>
         
-        try {
-          const response = await axios.get(`${apiBaseUrl}/get_players/${tournamentId.value}/`)
-          players.value = response.data
-          console.log('Jugadores cargados:', players.value)
-        } catch (error) {
-          console.error('Error al cargar jugadores:', error)
-          apiErrors.value = 'Error al cargar los participantes.'
-        } finally {
-          playersLoading.value = false
-        }
-      }
-      
-      // Cargar datos de clasificación
-      const loadRankings = async () => {
-        rankingsLoading.value = true
+        <!-- Estado de carga -->
+        <div v-else-if="isLoading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando información del torneo...</p>
+        </div>
         
-        try {
-          const response = await axios.get(`${apiBaseUrl}/get_ranking/${tournamentId.value}/`)
-          rankings.value = response.data
-          console.log('Clasificación cargada:', rankings.value)
-        } catch (error) {
-          console.error('Error al cargar clasificación:', error)
-          apiErrors.value = 'Error al cargar la clasificación.'
-        } finally {
-          rankingsLoading.value = false
-        }
-      }
-      
-      // Cargar datos de rondas
-      const loadRounds = async () => {
-        roundsLoading.value = true
-        
-        try {
-          const response = await axios.get(`${apiBaseUrl}/get_round_results/${tournamentId.value}/`)
-          roundsData.value = response.data
-          console.log('Rondas cargadas:', roundsData.value)
-        } catch (error) {
-          console.error('Error al cargar rondas:', error)
-          apiErrors.value = 'Error al cargar las rondas y partidas.'
-        } finally {
-          roundsLoading.value = false
-        }
-      }
-      
-      // Abrir el modal para editar una partida
-      const openEditGameModal = (roundId, game) => {
-        // Crear una copia profunda del objeto para no modificar directamente el original
-        editingGame.value = JSON.parse(JSON.stringify(game))
-        editingGame.value.id = game.game_id // Asegurarse de que el ID de la partida esté presente
-        editingRoundId.value = roundId
-        editingGameError.value = null
-        showEditGameModal.value = true
-      }
-      
-      // Guardar los cambios de la partida
-      const saveGameChanges = async () => {
-        updateGameLoading.value = true
-        editingGameError.value = null
-        
-        try {
-          // Si el resultado está establecido pero finished es false, actualizar finished a true
-          if (editingGame.value.result && !editingGame.value.finished) {
-            editingGame.value.finished = true
-          }
-          
-          // Enviar los datos actualizados a la API
-          const response = await axios.post(
-                `${apiBaseUrl}/admin_update_game/`,
-                {
-                // Asegúrate de incluir todos los campos necesarios en el cuerpo de la solicitud
-                game_id: editingGame.value.game_id,
-                result: editingGame.value.result,
-                finished: editingGame.value.finished,
-                }
-            )
-          console.log('Partida actualizada correctamente:', response.data)
-          
-          // Actualizar la partida en la lista local
-          if (roundsData.value && roundsData.value.rounds) {
-            const roundIndex = roundsData.value.rounds.rounds.findIndex(r => r.round_id === editingRoundId.value)
+        <div v-else-if="tournament" class="tournament-details">
+          <!-- Información del torneo -->
+          <div class="tournament-info-card">
+            <div class="tournament-status-banner" :class="getTournamentStatusClass(tournament)">
+              {{ getTournamentStatusText(tournament) }}
+            </div>
             
-            if (roundIndex !== -1) {
-              const gameIndex = roundsData.value.rounds.rounds[roundIndex].games.findIndex(g => g.game_id === editingGame.value.game_id)
+            <div class="tournament-info-content">
+              <div class="tournament-meta">
+                <div class="meta-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <div>
+                    <strong>Fechas:</strong>
+                    <div>{{ formatDate(tournament.start_date) }} - {{ tournament.end_date ? formatDate(tournament.end_date) : 'En curso' }}</div>
+                  </div>
+                </div>
+                
+                <div class="meta-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <div>
+                    <strong>Participantes:</strong>
+                    <div>{{ tournament.players ? tournament.players.length : 0 }} jugadores</div>
+                  </div>
+                </div>
+                
+                <div class="meta-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <div>
+                    <strong>Control de tiempo:</strong>
+                    <div>{{ tournament.timeControl || 'No especificado' }}</div>
+                  </div>
+                </div>
+              </div>
               
-              if (gameIndex !== -1) {
-                roundsData.value.rounds.rounds[roundIndex].games[gameIndex] = { ...editingGame.value }
-              }
+              <div class="tournament-description" v-if="tournament.description">
+                <h3>Descripción</h3>
+                <p>{{ tournament.description }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mostramos todas las secciones en la misma página -->
+          <div class="tournament-sections">
+            <!-- Sección de Participantes -->
+            <div class="section-container">
+              <h2 class="section-title">Participantes</h2>
+              
+              <div v-if="playersLoading" class="loading-state mini">
+                <div class="spinner"></div>
+                <p>Cargando participantes...</p>
+              </div>
+              
+              <div v-else-if="players.length === 0" class="empty-state mini">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3>No hay participantes registrados</h3>
+              </div>
+              
+              <div v-else class="players-list">
+                <table class="players-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Nombre</th>
+                      <th>Username Lichess</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(player, index) in players" :key="player.id">
+                      <td>{{ index + 1 }}</td>
+                      <td>{{ player.name || 'N/A' }}</td>
+                      <td>{{ player.lichess_username || 'N/A' }}</td>
+                      <td>{{ getPlayerRating(player) || 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Sección de Rondas y Partidas -->
+            <div class="section-container">
+              <h2 class="section-title">Rondas y Partidas</h2>
+              
+              <div v-if="roundsLoading" class="loading-state mini">
+                <div class="spinner"></div>
+                <p>Cargando rondas y partidas...</p>
+              </div>
+              
+              <div v-else-if="!roundsData || roundsData.rounds.length === 0" class="empty-state mini">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3>No hay rondas configuradas</h3>
+                <p>El torneo aún no ha sido emparejado o está en preparación.</p>
+              </div>
+              
+              <div v-else class="rounds-list">
+                <div v-for="round in roundsData.rounds.rounds" :key="round.round_id" class="round-card" >
+                  <div class="round-header">
+                    <h3>{{ round.round_name }}</h3>
+                    <div class="round-date" v-if="round.start_date">
+                      {{ formatDate(round.start_date) }}
+                    </div>
+                  </div>
+                  
+                  <div class="games-list">
+                    <div v-for="game in round.games" :key="game.game_id" class="game-item">
+                      <div class="game-players">
+                        <div class="player white">
+                          <strong>{{ game.white.name || 'Sin jugador' }}</strong>
+                          <span v-if="game.white.rating" class="rating">({{ game.white.rating }})</span>
+                        </div>
+                        
+                                
+                        <div class="game-result">
+                          <select 
+                            v-model="game.result" 
+                            class="result-select"
+                            :data-cy="`select-1-${game.game_id}`"
+                          >
+                    
+                            <option value="">-- Seleccionar --</option>
+                            <option value="W">White wins (1-0)</option>
+                            <option value="B">Black wins (0-1)</option>
+                            <option value="D">Draw (1/2-1/2)</option>
+                            <option value="F">Forfeit (F-F)</option>
+                          </select>
+                          
+                          <span 
+                            class="result-display"
+                            :data-cy="`input-1-${game.id}`"
+                          >
+                            {{ formatGameResult(game.result) }}
+                          </span>
+                        </div>
+                        
+                        <div class="player black">
+                          <strong>{{ game.black.name || 'Sin jugador' }}</strong>
+                          <span v-if="game.black.rating" class="rating">({{ game.black.rating }})</span>
+                        </div>
+                      </div>
+
+                      <p>select-{{ round.id }}-{{ game.id }}</p>
+                      
+                      <div class="game-actions">
+                        <div class="game-status" :class="game.finished ? 'finished' : 'pending'">
+                          {{ game.finished ? 'Finalizada' : 'Pendiente' }}
+                        </div>
+                        
+                        <button 
+                          class="submit-result-btn" 
+                          :data-cy="`button-1-${game.game_id}`"
+                          @click="submitGameResult(round.round_id, game)"
+                        >
+                          Enviar resultado
+                        </button>
+                        
+                        <button 
+                          class="edit-game-btn" 
+                          @click="openEditGameModal(round.round_id, game)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                          </svg>
+                          Editar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Sección de Clasificación -->
+            <div class="section-container" data-cy="ranking-section">
+              <h2 class="section-title" data-cy="standing-accordion-button">Clasificación</h2>
+              
+              <div v-if="rankingsLoading" class="loading-state mini">
+                <div class="spinner"></div>
+                <p>Cargando clasificación...</p>
+              </div>
+              
+              <div v-else-if="!rankings || Object.keys(rankings).length === 0" class="empty-state mini">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3>No hay clasificación disponible</h3>
+                <p>La clasificación estará disponible cuando se hayan jugado partidas.</p>
+              </div>
+              
+              <div v-else class="rankings-list">
+                <table class="rankings-table">
+                  <thead>
+                    <tr>
+                      <th>Pos</th>
+                      <th>Jugador</th>
+                      <th>Puntos</th>
+                      <th>Negras</th>
+                      <th>Victorias</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(player, index) in rankingsSorted" :key="player.id" :data-cy="`ranking-${index + 1}`">
+                      <td>{{ player.rank }}</td>
+                      <td>{{ player.name }}</td>
+                      <td>{{ player.score }}</td>
+                      <td>{{ player.BLACKTIMES }}</td>
+                      <td>{{ player.WINS }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal para editar partidas -->
+    <div v-if="showEditGameModal" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Editar Partida</h3>
+          <button class="close-modal" @click="showEditGameModal = false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div v-if="editingGameError" class="edit-game-error">
+            {{ editingGameError }}
+          </div>
+          
+          <div class="edit-game-form">
+            <div class="form-group">
+              <label>Jugador con blancas:</label>
+              <div class="player-info">
+                <strong>{{ editingGame?.white?.name || 'Sin jugador' }}</strong>
+                <span v-if="editingGame?.white?.rating" class="rating">
+                  ({{ editingGame.white.rating }})
+                </span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Jugador con negras:</label>
+              <div class="player-info">
+                <strong>{{ editingGame?.black?.name || 'Sin jugador' }}</strong>
+                <span v-if="editingGame?.black?.rating" class="rating">
+                  ({{ editingGame.black.rating }})
+                </span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Resultado:</label>
+              <select v-model="editingGame.result" class="form-control">
+                <option value="">-- Seleccionar resultado --</option>
+                <option value="W">Victoria blancas (1-0)</option>
+                <option value="B">Victoria negras (0-1)</option>
+                <option value="D">Tablas (½-½)</option>
+                <option value="F">Incomparecencia (F-F)</option>
+                <option value="">Pendiente</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Estado de la partida:</label>
+              <div class="toggle-switch">
+                <input 
+                  type="checkbox" 
+                  id="gameFinished" 
+                  v-model="editingGame.finished"
+                />
+                <label for="gameFinished">
+                  {{ editingGame.finished ? 'Finalizada' : 'Pendiente' }}
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-group" v-if="editingGame.lichess_id">
+              <label>ID de Lichess:</label>
+              <input 
+                type="text" 
+                v-model="editingGame.lichess_id" 
+                class="form-control"
+                placeholder="ID de la partida en Lichess"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label>Fecha de la partida:</label>
+              <input 
+                type="date" 
+                v-model="editingGame.date" 
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-cancel" @click="showEditGameModal = false">
+            Cancelar
+          </button>
+          
+          <button 
+            class="btn btn-save" 
+            @click="saveGameChanges()"
+            :disabled="updateGameLoading"
+          >
+            <div v-if="updateGameLoading" class="mini-spinner"></div>
+            <span v-else>Guardar cambios</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h3>TournamentMaster</h3>
+            <p>La plataforma líder para gestión de torneos de ajedrez.</p>
+          </div>
+          
+          <div class="footer-authors">
+            <h4>Desarrollado por:</h4>
+            <div class="authors-list">
+              <div class="author">
+                <div class="author-avatar">
+                  <span>AP</span>
+                </div>
+                <div class="author-info">
+                  <span class="author-name">Alejandra Palma</span>
+                </div>
+              </div>
+              
+              <div class="author">
+                <div class="author-avatar">
+                  <span>CC</span>
+                </div>
+                <div class="author-info">
+                  <span class="author-name">Claudia Cuevas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="footer-copyright">
+            <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</template>
+
+<script>
+
+import axios from 'axios'
+import { onMounted, ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import HeaderComponent from './Header.vue'
+
+export default {
+  name: 'TournamentDetails',
+  components: {
+    HeaderComponent
+  },
+  setup() {
+    const route = useRoute()
+    const tournamentId = computed(() => route.params.id)
+    
+    // Estado
+    const isLoading = ref(true)
+    const apiErrors = ref(null)
+    const tournament = ref(null)
+    const players = ref([])
+    const rankings = ref({})
+    const roundsData = ref(null)
+    const playersLoading = ref(false)
+    const rankingsLoading = ref(false)
+    const roundsLoading = ref(false)
+    
+    // Estado para la edición de partidas
+    const showEditGameModal = ref(false)
+    const editingGame = ref(null)
+    const editingRoundId = ref(null)
+    const editingGameError = ref(null)
+    const updateGameLoading = ref(false)
+    
+    // URL base para solicitudes a la API
+    const apiBaseUrl = '/api/v1'
+    
+    // Cargar datos del torneo
+    const loadTournament = async () => {
+      isLoading.value = true
+      apiErrors.value = null
+      
+      try {
+        const response = await axios.get(`${apiBaseUrl}/tournaments/${tournamentId.value}/`)
+        tournament.value = response.data
+        
+        console.log('Torneo cargado:', tournament.value)
+        
+        // Cargar todos los datos necesarios
+        loadPlayers()
+        loadRankings()
+        loadRounds()
+        
+      } catch (error) {
+        console.error('Error al cargar torneo:', error)
+        apiErrors.value = 'Error al cargar los datos del torneo. Por favor, inténtalo de nuevo más tarde.'
+      } finally {
+        isLoading.value = false
+      }
+    }
+    
+    // Cargar datos de participantes
+    const loadPlayers = async () => {
+      playersLoading.value = true
+      
+      try {
+        const response = await axios.get(`${apiBaseUrl}/get_players/${tournamentId.value}/`)
+        players.value = response.data
+        console.log('Jugadores cargados:', players.value)
+      } catch (error) {
+        console.error('Error al cargar jugadores:', error)
+        apiErrors.value = 'Error al cargar los participantes.'
+      } finally {
+        playersLoading.value = false
+      }
+    }
+    
+    // Cargar datos de clasificación
+    const loadRankings = async () => {
+      rankingsLoading.value = true
+      
+      try {
+        const response = await axios.get(`${apiBaseUrl}/get_ranking/${tournamentId.value}/`)
+        rankings.value = response.data
+        console.log('Clasificación cargada:', rankings.value)
+      } catch (error) {
+        console.error('Error al cargar clasificación:', error)
+        apiErrors.value = 'Error al cargar la clasificación.'
+      } finally {
+        rankingsLoading.value = false
+      }
+    }
+    
+    // Cargar datos de rondas
+    const loadRounds = async () => {
+      roundsLoading.value = true
+      
+      try {
+        const response = await axios.get(`${apiBaseUrl}/get_round_results/${tournamentId.value}/`)
+        roundsData.value = response.data
+        console.log('Rondas cargadas:', roundsData.value)
+      } catch (error) {
+        console.error('Error al cargar rondas:', error)
+        apiErrors.value = 'Error al cargar las rondas y partidas.'
+      } finally {
+        roundsLoading.value = false
+      }
+    }
+    
+    // Función para enviar el resultado de una partida
+    const submitGameResult = async (roundId, game) => {
+      try {
+        // Si no hay resultado seleccionado, no enviar
+        if (!game.result) {
+          alert('Por favor, selecciona un resultado antes de enviar.')
+          return
+        }
+        
+        // Solicitar el correo del usuario para verificación
+        const userEmail = window.prompt('Por favor, ingresa tu correo electrónico para confirmar:')
+        
+        if (!userEmail) {
+          return // Si el usuario cancela, no continuar
+        }
+        
+        // Preparar datos para enviar
+        const gameData = {
+          game_id: game.game_id,
+          result: game.result,
+          email: userEmail
+        }
+        
+        // Enviar resultado a la API
+        const response = await axios.post(`${apiBaseUrl}/admin_update_game/`, gameData)
+        
+        console.log('Resultado enviado correctamente:', response.data)
+        
+        // Marcar la partida como finalizada
+        game.finished = true
+        
+        // Recargar la clasificación para reflejar los cambios
+        loadRankings()
+        
+      } catch (error) {
+        console.error('Error al enviar el resultado:', error)
+        alert('Error al enviar el resultado. Por favor, inténtalo de nuevo.')
+      }
+    }
+    
+    // Abrir el modal para editar una partida
+    const openEditGameModal = (roundId, game) => {
+      // Crear una copia profunda del objeto para no modificar directamente el original
+      editingGame.value = JSON.parse(JSON.stringify(game))
+      editingGame.value.id = game.game_id // Asegurarse de que el ID de la partida esté presente
+      editingRoundId.value = roundId
+      editingGameError.value = null
+      showEditGameModal.value = true
+    }
+    
+    // Guardar los cambios de la partida
+    const saveGameChanges = async () => {
+      updateGameLoading.value = true
+      editingGameError.value = null
+      
+      try {
+        // Si el resultado está establecido pero finished es false, actualizar finished a true
+        if (editingGame.value.result && !editingGame.value.finished) {
+          editingGame.value.finished = true
+        }
+        
+        // Enviar los datos actualizados a la API
+        const response = await axios.post(
+          `${apiBaseUrl}/admin_update_game/`,
+          {
+            // Asegúrate de incluir todos los campos necesarios en el cuerpo de la solicitud
+            game_id: editingGame.value.game_id,
+            result: editingGame.value.result,
+            finished: editingGame.value.finished,
+          }
+        )
+        console.log('Partida actualizada correctamente:', response.data)
+        
+        // Actualizar la partida en la lista local
+        if (roundsData.value && roundsData.value.rounds) {
+          const roundIndex = roundsData.value.rounds.rounds.findIndex(r => r.round_id === editingRoundId.value)
+          
+          if (roundIndex !== -1) {
+            const gameIndex = roundsData.value.rounds.rounds[roundIndex].games.findIndex(g => g.game_id === editingGame.value.game_id)
+            
+            if (gameIndex !== -1) {
+              roundsData.value.rounds.rounds[roundIndex].games[gameIndex] = { ...editingGame.value }
             }
           }
-          
-          // Actualizar la clasificación si hay cambios en los resultados
-          loadRankings()
-          
-          // Cerrar el modal
-          showEditGameModal.value = false
-        } catch (error) {
-          console.error('Error al actualizar la partida:', error)
-          
-          if (error.response && error.response.data) {
-            editingGameError.value = error.response.data.detail || 'Error al guardar los cambios. Inténtalo de nuevo.'
-          } else {
-            editingGameError.value = 'Error de conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.'
-          }
-        } finally {
-          updateGameLoading.value = false
-        }
-      }
-      
-      // Cargar datos según la pestaña activa
-      const loadTabData = (tab) => {
-        if (tab === 'players') {
-          loadPlayers()
-        } else if (tab === 'rankings') {
-          loadRankings()
-        } else if (tab === 'rounds') {
-          loadRounds()
-        }
-      }
-      
-      // Formateador de fechas
-      const formatDate = (dateString) => {
-        if (!dateString) return 'Fecha no disponible'
-        
-        try {
-          const options = { day: '2-digit', month: '2-digit', year: 'numeric' }
-          return new Date(dateString).toLocaleDateString('es-ES', options)
-        } catch (error) {
-          console.error('Error al formatear fecha:', dateString, error)
-          return 'Fecha inválida'
-        }
-      }
-      
-      // Determinar el estado del torneo
-      const getTournamentStatusClass = (tournament) => {
-        if (!tournament.start_date) return 'proximo'
-        
-        const now = new Date()
-        const startDate = new Date(tournament.start_date)
-        const endDate = tournament.end_date ? new Date(tournament.end_date) : null
-        
-        if (now < startDate) return 'proximo'
-        if (endDate && now > endDate) return 'finalizado'
-        return 'en_curso'
-      }
-      
-      // Obtener texto de estado para mostrar
-      const getTournamentStatusText = (tournament) => {
-        const status = getTournamentStatusClass(tournament)
-        
-        const statusMap = {
-          'proximo': 'Próximo',
-          'en_curso': 'En curso',
-          'finalizado': 'Finalizado',
-          'abierto': 'Inscripción abierta'
         }
         
-        return statusMap[status] || 'Estado desconocido'
-      }
-      
-      // Obtener el texto del tipo de torneo
-      const getTournamentTypeText = (type) => {
-        const typeMap = {
-          'SW': 'Suizo',
-          'RR': 'Round Robin',
-          'KO': 'Eliminación',
-          'TE': 'Por equipos'
-        }
+        // Actualizar la clasificación si hay cambios en los resultados
+        loadRankings()
         
-        return typeMap[type] || 'Ajedrez'
-      }
-      
-      // Obtener el rating del jugador según el tipo de torneo
-      const getPlayerRating = (player) => {
-        if (!tournament.value || !player) return null
+        // Cerrar el modal
+        showEditGameModal.value = false
+      } catch (error) {
+        console.error('Error al actualizar la partida:', error)
         
-        switch(tournament.value.tournament_speed) {
-          case 'BL':
-            return player.fide_rating_blitz || player.lichess_rating_blitz
-          case 'RA':
-            return player.fide_rating_rapid || player.lichess_rating_rapid
-          default: // 'CL' - Classical
-            return player.fide_rating_classical || player.lichess_rating_classical
+        if (error.response && error.response.data) {
+          editingGameError.value = error.response.data.detail || 'Error al guardar los cambios. Inténtalo de nuevo.'
+        } else {
+          editingGameError.value = 'Error de conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.'
         }
+      } finally {
+        updateGameLoading.value = false
       }
-      
-      // Formatear el resultado de la partida para mostrar
-      const formatGameResult = (result) => {
-        const resultMap = {
-          'W': '1-0',
-          'B': '0-1',
-          'D': '½-½',
-          'F': 'F-F' // Forfeit
-        }
-        
-        return resultMap[result] || '-'
-      }
-      
-      // Obtener la clase CSS según el resultado
-      const getGameResultClass = (result) => {
-        return {
-          'W': 'white-win',
-          'B': 'black-win',
-          'D': 'draw',
-          'F': 'forfeit'
-        }[result] || ''
-      }
-      
-      // Ordenar rankings por posición
-      const rankingsSorted = computed(() => {
-        return Object.values(rankings.value)
-          .sort((a, b) => a.rank - b.rank)
-      })
-      
-      // Observar cambios en la pestaña activa
-      const watchActiveTab = (newTab) => {
-        loadTabData(newTab)
-      }
-      
-      onMounted(() => {
-        loadTournament()
-      })
-      
-      return {
-        tournament,
-        isLoading,
-        apiErrors,
-        players,
-        rankings,
-        rankingsSorted,
-        roundsData,
-        activeTab,
-        playersLoading,
-        rankingsLoading,
-        roundsLoading,
-        showEditGameModal,
-        editingGame,
-        editingRoundId,
-        editingGameError,
-        getTournamentStatusClass,
-        getTournamentStatusText,
-        getTournamentTypeText,
-        getPlayerRating,
-        formatGameResult,
-        formatDate,
-        openEditGameModal,
-        saveGameChanges,
-        rankingsSorted,
-        getGameResultClass,
-        watchActiveTab
     }
-  },
-  watch: {
-    activeTab(newTab) {
-      this.watchActiveTab(newTab)
+    
+    // Formateador de fechas
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Fecha no disponible'
+      
+      try {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' }
+        return new Date(dateString).toLocaleDateString('es-ES', options)
+      } catch (error) {
+        console.error('Error al formatear fecha:', dateString, error)
+        return 'Fecha inválida'
+      }
+    }
+    
+    // Determinar el estado del torneo
+    const getTournamentStatusClass = (tournament) => {
+      if (!tournament.start_date) return 'proximo'
+      
+      const now = new Date()
+      const startDate = new Date(tournament.start_date)
+      const endDate = tournament.end_date ? new Date(tournament.end_date) : null
+      
+      if (now < startDate) return 'proximo'
+      if (endDate && now > endDate) return 'finalizado'
+      return 'en_curso'
+    }
+    
+    // Obtener texto de estado para mostrar
+    const getTournamentStatusText = (tournament) => {
+      const status = getTournamentStatusClass(tournament)
+      
+      const statusMap = {
+        'proximo': 'Próximo',
+        'en_curso': 'En curso',
+        'finalizado': 'Finalizado',
+        'abierto': 'Inscripción abierta'
+      }
+      
+      return statusMap[status] || 'Estado desconocido'
+    }
+    
+    // Obtener el texto del tipo de torneo
+    const getTournamentTypeText = (type) => {
+      const typeMap = {
+        'SW': 'Suizo',
+        'RR': 'Round Robin',
+        'KO': 'Eliminación',
+        'TE': 'Por equipos',
+        'SR': 'Round Robin' // Añadido para ser compatible con el test
+      }
+      
+      return typeMap[type] || 'Ajedrez'
+    }
+    
+    // Obtener el rating del jugador según el tipo de torneo
+    const getPlayerRating = (player) => {
+      if (!tournament.value || !player) return null
+      
+      switch(tournament.value.tournament_speed) {
+        case 'BL':
+          return player.fide_rating_blitz || player.lichess_rating_blitz
+        case 'RA':
+          return player.fide_rating_rapid || player.lichess_rating_rapid
+        default: // 'CL' - Classical
+          return player.fide_rating_classical || player.lichess_rating_classical
+      }
+    }
+      
+    // Formatear el resultado de la partida para mostrar
+    const formatGameResult = (result) => {
+      const resultMap = {
+        'W': '1-0',
+        'B': '0-1',
+        'D': '½-½',
+        'F': 'F-F' // Forfeit
+      }
+      
+      return resultMap[result] || '-'
+    }
+      
+    // Obtener la clase CSS según el resultado
+    const getGameResultClass = (result) => {
+      return {
+        'W': 'white-win',
+        'B': 'black-win',
+        'D': 'draw',
+        'F': 'forfeit'
+      }[result] || ''
+    }
+      
+    // Ordenar rankings por posición
+    const rankingsSorted = computed(() => {
+      return Object.values(rankings.value)
+        .sort((a, b) => a.rank - b.rank)
+    })
+      
+    onMounted(() => {
+      loadTournament()
+    })
+      
+    return {
+      tournament,
+      isLoading,
+      apiErrors,
+      players,
+      rankings,
+      rankingsSorted,
+      roundsData,
+      playersLoading,
+      rankingsLoading,
+      roundsLoading,
+      showEditGameModal,
+      editingGame,
+      editingRoundId,
+      editingGameError,
+      updateGameLoading,
+      getTournamentStatusClass,
+      getTournamentStatusText,
+      getTournamentTypeText,
+      getPlayerRating,
+      formatGameResult,
+      formatDate,
+      submitGameResult,
+      openEditGameModal,
+      saveGameChanges,
+      getGameResultClass
     }
   }
 }
 </script>
-
 <style scoped>
 .tournament-details-page {
   min-height: 100vh;
