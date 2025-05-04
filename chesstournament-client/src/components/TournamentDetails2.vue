@@ -163,8 +163,6 @@
                           <strong>{{ game.white.name || 'Sin jugador' }}</strong>
                           <span v-if="game.white.rating" class="rating">({{ game.white.rating }})</span>
                         </div>
-                        
-                                
                         <div class="game-result">
                           <select 
                             v-model="game.result" 
