@@ -65,7 +65,7 @@
           <div 
             v-for="tournament in tournaments"
             :key="tournament.id" 
-            :data-cy= "tournament.name"
+            :data-cy= " isSearching ? 'search-' + tournament.name : tournament.name"
             class="tournament-card"
             :data-cy="'search-' + tournament.name"
           >
@@ -390,6 +390,7 @@ export default {
     
     // Manejar búsqueda
     const handleSearch = () => {
+      isSearching.value = true
       currentPage.value = 1
       loadTournaments()
     }
