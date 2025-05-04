@@ -65,9 +65,8 @@
           <div 
             v-for="tournament in tournaments"
             :key="tournament.id" 
-            :data-cy= " isSearching ? 'search-' + tournament.name : tournament.name"
             class="tournament-card"
-            :data-cy="'search-' + tournament.name"
+            :data-cy="tournament.name"
           >
             <div class="tournament-image">
               <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
@@ -223,11 +222,7 @@ export default {
     const searchQuery = ref('')
     const currentPage = ref(1)
     const totalItems = ref(0)
-<<<<<<< Updated upstream
-    const itemsPerPage = 5 /*  TODO: ANTES ERAN 10 */
-=======
     const itemsPerPage = 5
->>>>>>> Stashed changes
     const apiErrors = ref(null)
     const isSearching = ref(false)
     
