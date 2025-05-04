@@ -22,8 +22,9 @@
               placeholder="Buscar torneos por nombre..."
               @keyup.enter="handleSearch"
               class="search-input"
+              data-cy="input-search"
             >
-            <button class="search-button" @click="handleSearch">
+            <button class="search-button" @click="handleSearch" data-cy="submit-search">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -65,7 +66,7 @@
           <div 
             v-for="tournament in tournaments"
             :key="tournament.id" 
-            :data-cy= "tournament.name"
+            :data-cy= " isSearching ? 'search-' + tournament.name : tournament.name"
             class="tournament-card"
           >
             <div class="tournament-image">
@@ -383,6 +384,7 @@ export default {
     
     // Manejar búsqueda
     const handleSearch = () => {
+      isSearching.value = true
       currentPage.value = 1
       loadTournaments()
     }
