@@ -19,6 +19,17 @@ describe("Tournament List Test", () => {
     }
 
     cy.visit("/");
+
+    /* DEBUG */
+    cy.get('[data-cy^="tournament_name_"]').then(($els) => {
+      const tournaments = $els.map((i, el) => el.getAttribute('data-cy')).get();
+      cy.log('Torneos encontrados:', tournaments);
+      if (!tournaments.includes('tournament_name_5_5')) {
+        throw new Error('No se encontró tournament_name_5_5 en: ' + tournaments.join(', '));
+      }
+    });
+
+    /* FIN DEBUG */
     cy.get("[data-cy=tournament_name_5_5]").should("exist");
     cy.get("[data-cy=tournament_name_1_1]").should("not.exist");
     // go to next page

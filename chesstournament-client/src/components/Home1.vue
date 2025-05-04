@@ -63,8 +63,9 @@
         <!-- Lista de torneos -->
         <div v-else class="tournaments-grid">
           <div 
-            v-for="tournament in tournaments" 
+            v-for="tournament in tournaments"
             :key="tournament.id" 
+            :data-cy= "tournament.name"
             class="tournament-card"
           >
             <div class="tournament-image">
@@ -128,6 +129,7 @@
             class="pagination-btn" 
             :disabled="currentPage === 1"
             @click="goToPage(currentPage - 1)"
+            data-cy="previous-button"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
@@ -149,9 +151,10 @@
           </div>
           
           <button 
-            class="pagination-btn" 
+            class="pagination-btn"
             :disabled="currentPage === totalPages"
             @click="goToPage(currentPage + 1)"
+            data-cy="next-button"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
@@ -218,7 +221,7 @@ export default {
     const searchQuery = ref('')
     const currentPage = ref(1)
     const totalItems = ref(0)
-    const itemsPerPage = 10
+    const itemsPerPage = 5 /*  TODO: ANTES ERAN 10 */
     const apiErrors = ref(null)
     const isSearching = ref(false)
     

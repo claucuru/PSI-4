@@ -50,7 +50,7 @@
             <p>{{ apiErrors }}</p>
           </div>
           
-          <!-- Estado de carga -->
+          <!-- Estado de carga -->  
           <div v-else-if="isLoading" class="loading-state">
             <div class="spinner"></div>
             <p>Cargando torneos...</p>
@@ -70,8 +70,9 @@
           <!-- Lista de torneos -->
           <div v-else class="tournaments-grid">
             <div 
-              v-for="tournament in tournaments" 
-              :key="tournament.id" 
+              v-for="tournament in tournaments"
+              :key="tournament.id"
+              :data-cy= "tournament.name"
               class="tournament-card"
             >
               <div class="tournament-image">
@@ -121,8 +122,8 @@
                 </div>
                 
                 <div class="tournament-footer">
-                  <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn">
-                    Ver detalles
+                  <router-link :to="`/tournamentdetail2/${tournament.id}`" :data-cy="`${tournament.name}`" class="view-details-btn">
+                    {{ tournament.name }}
                   </router-link>
                 </div>
               </div>
@@ -135,6 +136,7 @@
               class="pagination-btn" 
               :disabled="currentPage === 1"
               @click="goToPage(currentPage - 1)"
+              data-cy="previous-button"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -159,6 +161,7 @@
               class="pagination-btn" 
               :disabled="currentPage === totalPages"
               @click="goToPage(currentPage + 1)"
+              data-cy="next-button"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
@@ -225,7 +228,7 @@ import HeaderComponent from './Header.vue'
       const searchQuery = ref('')
       const currentPage = ref(1)
       const totalItems = ref(0)
-      const itemsPerPage = 10
+      const itemsPerPage = 5
       const apiErrors = ref(null)
       const isSearching = ref(false)
       
