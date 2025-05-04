@@ -16,8 +16,10 @@ module.exports = defineConfig({
     username: "y",
     password: "y",
     // python: "/home/roberto/miniconda/envs/chess/bin/python",
-    python: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/p4_env/bin/python3",
+    //python: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/p4_env/bin/python3",
+    python: "/home/alejandra-palma/Documentos/GitHub/PSI-4/venv/bin/python",
 //    manage: "/home/roberto/Docencia/psi/2024-25/chesstournament/chesstournament_server/manage.py",
-    manage: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/chesstournament/manage.py",
+    //manage: "/mnt/c/Users/Usuario/OneDrive\\ -\\ UAM/Documentos/GitHub/PSI-4/chesstournament/manage.py",
+    manage: "/home/alejandra-palma/Documentos/GitHub/PSI-4/chesstournament/manage.py",
   },
 });

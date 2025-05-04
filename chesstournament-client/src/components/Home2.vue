@@ -7,7 +7,7 @@
           <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
           <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
           <div data-cy="admin-log" class="admin-welcome-message">Hello, you are logged in as an administrator</div>
-          <router-link to="/createtournament" class ="create-tournament-btn">
+          <router-link to="/createtournament" class="create-tournament-btn" data-cy="create-Tournament-button">
             Crea un torneo
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -17,39 +17,14 @@
         </div>
       </div>
       
-      <div class="main-content">
-        <div class="container">
-          <div class="tournaments-header">
-            <h2 class="section-title">Torneos disponibles</h2>
-            
-            <div class="search-bar">
-              <input 
-                type="text" 
-                v-model="searchQuery" 
-                placeholder="Buscar torneos por nombre..."
-                @keyup.enter="handleSearch"
-                class="search-input"
-              >
-              <button class="search-button" @click="handleSearch">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-        
-          <!-- Estado de error -->
-          <div v-if="apiErrors" class="error-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Ha ocurrido un error</h3>
-            <p>{{ apiErrors }}</p>
-          </div>
+      
+
+    <div class="main-content">
+      <div class="container">
+        <div class="tournaments-header">
+          <h2 class="section-title">Torneos disponibles</h2>
           
+<<<<<<< Updated upstream
           <!-- Estado de carga -->  
           <div v-else-if="isLoading" class="loading-state">
             <div class="spinner"></div>
@@ -74,13 +49,109 @@
               :key="tournament.id"
               :data-cy= "tournament.name"
               class="tournament-card"
+=======
+          <div class="search-bar">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Buscar torneos por nombre..."
+              @keyup.enter="handleSearch"
+              class="search-input"
+              data-cy="input-search"
+>>>>>>> Stashed changes
             >
-              <div class="tournament-image">
-                <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
-                  {{ getTournamentStatusText(tournament) }}
+            <button class="search-button" @click="handleSearch" data-cy="submit-search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      
+        <!-- Estado de error -->
+        <div v-if="apiErrors" class="error-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>Ha ocurrido un error</h3>
+          <p>{{ apiErrors }}</p>
+        </div>
+        
+        <!-- Estado de carga -->
+        <div v-else-if="isLoading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando torneos...</p>
+        </div>
+        
+        <!-- Estado vacío -->
+        <div v-else-if="tournaments.length === 0" class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>No se encontraron torneos</h3>
+          <p>Intenta con otros filtros de búsqueda o vuelve más tarde.</p>
+        </div>
+        
+        <!-- Lista de torneos -->
+        <div v-else class="tournaments-grid">
+          <div 
+            v-for="tournament in tournaments" 
+            :key="tournament.id" 
+            class="tournament-card"
+            :data-cy="'search-' + tournament.name"
+          >
+            <div class="tournament-image">
+              <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
+                {{ getTournamentStatusText(tournament) }}
+              </div>
+            </div>
+            
+            <div class="tournament-content">
+              <div class="tournament-sport">
+                {{ getTournamentTypeText(tournament.tournament_type) }}
+              </div>
+              <h3 class="tournament-title">{{ tournament.name }}</h3>
+              <div class="tournament-info">
+                <div class="info-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span>{{ formatDate(tournament.start_date) }} - {{ tournament.end_date ? formatDate(tournament.end_date) : 'En curso' }}</span>
+                </div>
+                <div class="info-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span>{{ tournament.players ? tournament.players.length : 0 }} participantes</span>
+                </div>
+                <div class="info-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <span>{{ tournament.board_type === 'OTB' ? 'Presencial' : 'Online' }}</span>
+                </div>
+                <div class="info-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>{{ tournament.timeControl || 'Tiempo no especificado' }}</span>
                 </div>
               </div>
               
+<<<<<<< Updated upstream
               <div class="tournament-content">
                 <div class="tournament-sport">
                   {{ getTournamentTypeText(tournament.tournament_type) }}
@@ -126,10 +197,81 @@
                     {{ tournament.name }}
                   </router-link>
                 </div>
+=======
+              <div class="tournament-footer">
+                <router-link :to="`/torneos/${tournament.id}`" class="view-details-btn">
+                  Ver detalles
+                </router-link>
+>>>>>>> Stashed changes
               </div>
             </div>
           </div>
+        </div>
+        
+        <!-- Paginación -->
+        <div class="pagination" v-if="totalPages > 1 && !isSearching">
+          <button 
+            class="pagination-btn" 
+            :disabled="currentPage === 1"
+            @click="goToPage(currentPage - 1)"
+            data-cy="previous-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
           
+          <div class="pagination-pages">
+            <template v-for="page in displayedPages" :key="page">
+              <button 
+                v-if="page !== '...'" 
+                class="page-number" 
+                :class="{ active: page === currentPage }"
+                @click="goToPage(page)"
+                :data-cy="`page-${page}`"
+              >
+                {{ page }}
+              </button>
+              <span v-else class="page-ellipsis">...</span>
+            </template>
+          </div>
+          
+          <button 
+            class="pagination-btn" 
+            :disabled="currentPage === totalPages"
+            @click="goToPage(currentPage + 1)"
+            data-cy="next-button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-logo">
+        <h3>TournamentMaster</h3>
+        <p>La plataforma líder para gestión de torneos de ajedrez.</p>
+      </div>
+      
+      <div class="footer-authors">
+        <h4>Desarrollado por:</h4>
+        <div class="authors-list">
+          <div class="author">
+            <div class="author-avatar">
+              <!-- Iniciales o ícono -->
+              <span>AP</span>
+            </div>
+            <div class="author-info">
+              <span class="author-name">Alejandra Palma</span>
+            </div>
+          </div>
+          
+<<<<<<< Updated upstream
           <!-- Paginación -->
           <div class="pagination" v-if="totalPages > 1 && !isSearching">
             <button 
@@ -199,23 +341,33 @@
               <div class="author-info">
                 <span class="author-name">Claudia Cuevas</span>
               </div>
+=======
+          <div class="author">
+            <div class="author-avatar">
+              <span>CC</span>
+            </div>
+            <div class="author-info">
+              <span class="author-name">Claudia Cuevas</span>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
-        
-        <div class="footer-copyright">
-          <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
-        </div>
+      </div>
+      
+      <div class="footer-copyright">
+        <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
       </div>
     </div>
-  </footer>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios'
+  </div>
+</footer>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 import HeaderComponent from './Header.vue'
+<<<<<<< Updated upstream
   
   export default {
     name: 'HomeView2',
@@ -231,87 +383,104 @@ import HeaderComponent from './Header.vue'
       const itemsPerPage = 5
       const apiErrors = ref(null)
       const isSearching = ref(false)
+=======
+
+export default {
+  name: 'HomeView',
+  components: {
+    HeaderComponent
+  },
+  setup() {
+    const tournaments = ref([])
+    const isLoading = ref(true)
+    const searchQuery = ref('')
+    const currentPage = ref(1)
+    const totalItems = ref(0)
+    const itemsPerPage = 5
+    const apiErrors = ref(null)
+    const isSearching = ref(false)
+    
+    // Configurar la URL base para las solicitudes a la API
+    const apiBaseUrl = '/api/v1'
+    
+    const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
+    
+    // Cálculo de los números de página a mostrar
+    const displayedPages = computed(() => {
+      const pages = []
+      const maxVisiblePages = 5
+>>>>>>> Stashed changes
       
-      // Configurar la URL base para las solicitudes a la API
-      const apiBaseUrl = '/api/v1'
-      
-      const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
-      
-      // Cálculo de los números de página a mostrar
-      const displayedPages = computed(() => {
-        const pages = []
-        const maxVisiblePages = 5
+      if (totalPages.value <= maxVisiblePages) {
+        for (let i = 1; i <= totalPages.value; i++) {
+          pages.push(i)
+        }
+      } else {
+        pages.push(1)
         
-        if (totalPages.value <= maxVisiblePages) {
-          for (let i = 1; i <= totalPages.value; i++) {
-            pages.push(i)
-          }
-        } else {
-          pages.push(1)
-          
-          let startPage = Math.max(2, currentPage.value - 1)
-          let endPage = Math.min(totalPages.value - 1, startPage + 2)
-          
-          if (startPage > 2) {
-            pages.push('...')
-          }
-          
-          for (let i = startPage; i <= endPage; i++) {
-            pages.push(i)
-          }
-          
-          if (endPage < totalPages.value - 1) {
-            pages.push('...')
-          }
-          
-          pages.push(totalPages.value)
+        let startPage = Math.max(2, currentPage.value - 1)
+        let endPage = Math.min(totalPages.value - 1, startPage + 2)
+        
+        if (startPage > 2) {
+          pages.push('...')
         }
         
-        return pages
-      })
-      
-      // Determinar el estado del torneo
-      const getTournamentStatusClass = (tournament) => {
-        if (!tournament.start_date) return 'proximo'
-        
-        const now = new Date()
-        const startDate = new Date(tournament.start_date)
-        
-        if (startDate > now) return 'proximo'
-        if (!tournament.end_date) return 'en_curso'
-        
-        const endDate = new Date(tournament.end_date)
-        if (endDate < now) return 'finalizado'
-        
-        return 'en_curso'
-      }
-      
-      // Obtener texto de estado para mostrar
-      const getTournamentStatusText = (tournament) => {
-        const status = getTournamentStatusClass(tournament)
-        
-        const statusMap = {
-          'proximo': 'Próximo',
-          'en_curso': 'En curso',
-          'finalizado': 'Finalizado',
-          'abierto': 'Inscripción abierta'
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i)
         }
         
-        return statusMap[status] || 'Estado desconocido'
-      }
-      
-      // Obtener el texto del tipo de torneo
-      const getTournamentTypeText = (type) => {
-        const typeMap = {
-          'SW': 'Suizo',
-          'RR': 'Round Robin',
-          'KO': 'Eliminación',
-          'TE': 'Por equipos'
+        if (endPage < totalPages.value - 1) {
+          pages.push('...')
         }
         
-        return typeMap[type] || 'Ajedrez'
+        pages.push(totalPages.value)
       }
       
+      return pages
+    })
+    
+    // Determinar el estado del torneo
+    const getTournamentStatusClass = (tournament) => {
+      if (!tournament.start_date) return 'proximo'
+      
+      const now = new Date()
+      const startDate = new Date(tournament.start_date)
+      
+      if (startDate > now) return 'proximo'
+      if (!tournament.end_date) return 'en_curso'
+      
+      const endDate = new Date(tournament.end_date)
+      if (endDate < now) return 'finalizado'
+      
+      return 'en_curso'
+    }
+    
+    // Obtener texto de estado para mostrar
+    const getTournamentStatusText = (tournament) => {
+      const status = getTournamentStatusClass(tournament)
+      
+      const statusMap = {
+        'proximo': 'Próximo',
+        'en_curso': 'En curso',
+        'finalizado': 'Finalizado',
+        'abierto': 'Inscripción abierta'
+      }
+      
+      return statusMap[status] || 'Estado desconocido'
+    }
+    
+    // Obtener el texto del tipo de torneo
+    const getTournamentTypeText = (type) => {
+      const typeMap = {
+        'SW': 'Suizo',
+        'RR': 'Round Robin',
+        'KO': 'Eliminación',
+        'TE': 'Por equipos',
+        'SR': 'Single Round Robin' // Añadido este tipo que aparece en las pruebas
+      }
+      
+      return typeMap[type] || 'Ajedrez'
+    }
       // Cargar torneos desde la API
       const loadTournaments = async () => {
         isLoading.value = true

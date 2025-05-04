@@ -58,7 +58,7 @@
               <img v-if="userPhotoUrl" :src="userPhotoUrl" alt="Foto de perfil" class="user-photo" />
               <span v-else class="user-initial">{{ userInitial }}</span>
               <!-- AÑADIDO -->
-               <span v-if="isAdmin" class="admin-badge" data-cy="admin-log">Hello, you are logged in as an administrator</span>
+               <span v-if="isAdmin" class="admin-badge" data-cy="admin-log"> Estás autenticado como administrador</span>
             </div>
             <span class="user-name">{{ username }}</span>
             <span class="dropdown-icon">

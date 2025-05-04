@@ -1,4 +1,3 @@
-
 <template>
   <div class="home-page">
     <HeaderComponent />
@@ -22,8 +21,9 @@
               placeholder="Buscar torneos por nombre..."
               @keyup.enter="handleSearch"
               class="search-input"
+              data-cy="input-search"
             >
-            <button class="search-button" @click="handleSearch">
+            <button class="search-button" @click="handleSearch" data-cy="submit-search">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -67,6 +67,7 @@
             :key="tournament.id" 
             :data-cy= "tournament.name"
             class="tournament-card"
+            :data-cy="'search-' + tournament.name"
           >
             <div class="tournament-image">
               <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
@@ -143,6 +144,7 @@
                 class="page-number" 
                 :class="{ active: page === currentPage }"
                 @click="goToPage(page)"
+                :data-cy="`page-${page}`"
               >
                 {{ page }}
               </button>
@@ -221,7 +223,11 @@ export default {
     const searchQuery = ref('')
     const currentPage = ref(1)
     const totalItems = ref(0)
+<<<<<<< Updated upstream
     const itemsPerPage = 5 /*  TODO: ANTES ERAN 10 */
+=======
+    const itemsPerPage = 5
+>>>>>>> Stashed changes
     const apiErrors = ref(null)
     const isSearching = ref(false)
     
@@ -299,7 +305,8 @@ export default {
         'SW': 'Suizo',
         'RR': 'Round Robin',
         'KO': 'Eliminación',
-        'TE': 'Por equipos'
+        'TE': 'Por equipos',
+        'SR': 'Single Round Robin' // Añadido este tipo que aparece en las pruebas
       }
       
       return typeMap[type] || 'Ajedrez'
@@ -440,7 +447,7 @@ export default {
 }
 
 .hero-title {
-  font-size: 42px;
+  font-size: br42px;
   font-weight: 700;
   margin-bottom: 16px;
 }
