@@ -103,7 +103,7 @@
             v-for="tournament in tournaments" 
             :key="tournament.id" 
             class="tournament-card"
-            :data-cy="'search-' + tournament.name"
+            :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"
           >
             <div class="tournament-image">
               <div class="tournament-status" :class="getTournamentStatusClass(tournament)">

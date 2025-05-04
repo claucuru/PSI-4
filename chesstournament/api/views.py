@@ -331,16 +331,12 @@ class SearchTournamentsAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # tournaments = Tournament.objects.filter(
-        #     name__icontains=search_string
-        # ).order_by('-name')
-        # serializer = TournamentSerializer(tournaments, many=True)
-
         tournaments = Tournament.objects.filter(
-            name__iregex=r'{}'.format(re.escape(search_string))
-        ).order_by('-name')
-
+             name__icontains=search_string
+         ).order_by('-name')
         serializer = TournamentSerializer(tournaments, many=True)
+
+       
 
         # Devolver solo la lista de torneos como espera el test
         return Response(
