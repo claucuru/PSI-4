@@ -61,7 +61,7 @@ const router = createRouter({
     },
     {
       path: '/tournamentdetail2/:id',
-      name: 'tournament-details',
+      name: 'tournament-details2',
       component: TournamentDetails2,
     },
     {

@@ -35,17 +35,22 @@ class Command(BaseCommand):
         Round.objects.all().delete()
         Player.objects.all().delete()
         Tournament.objects.all().delete()
+        
+        # Reset sequences after deletion
+        self.reset_sequences([Game, Round, Player, Tournament])
     
-    def update_sequence(self):
-        # since I have used the ID from the TRF file
-        # I need to update the sequence to the last ID
-        # since now the sequence is 1 (at least for players)
-
-        sequence_sql = connection.ops.sequence_reset_sql(
-            no_style(), [Player])
+    def reset_sequences(self, models):
+        # Reset the sequence for each model to start from 1
+        sequence_sql = connection.ops.sequence_reset_sql(no_style(), models)
         with connection.cursor() as cursor:
             for sql in sequence_sql:
                 cursor.execute(sql)
+    
+    def update_sequence(self):
+        # Since I have used the ID from the TRF file
+        # I need to update the sequence to the last ID
+        # Update sequences for all models
+        self.reset_sequences([Player, Round, Game, Tournament])
 
     def readInputFile(self, filename):
         # Read the TRF file containing tournament information
@@ -143,9 +148,6 @@ class Command(BaseCommand):
                          round=round, finished=True,
                          result=result)
                 g.save()
-        # By default seq=1, find las ID and
-        # set the sequence to the last ID
+        
+        # Update sequences for all models to reflect current state
         self.update_sequence()
-        all_games = Game.objects.all()
-        # for game in all_games:
-        #     print("game", game,  game.round.tournament.id)

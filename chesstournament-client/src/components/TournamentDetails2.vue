@@ -90,7 +90,7 @@
           <div class="tournament-sections">
             <!-- Sección de Participantes -->
             <div class="section-container">
-              <h2 class="section-title">Participantes</h2>
+              <h2 class="tabs-header">Participantes</h2>
               
               <div v-if="playersLoading" class="loading-state mini">
                 <div class="spinner"></div>
@@ -127,10 +127,9 @@
                 </table>
               </div>
             </div>
-            
             <!-- Sección de Rondas y Partidas -->
             <div class="section-container">
-              <h2 class="section-title">Rondas y Partidas</h2>
+              <h2 class="tabs-header">Rondas y Partidas</h2>
               
               <div v-if="roundsLoading" class="loading-state mini">
                 <div class="spinner"></div>
@@ -148,7 +147,7 @@
               </div>
               
               <div v-else class="rounds-list">
-                <div v-for="round in roundsData.rounds.rounds" :key="round.round_id" class="round-card" >
+                <div v-for="round in roundsData.rounds.rounds" :key="round.round_id" class="round-card">
                   <div class="round-header">
                     <h3>{{ round.round_name }}</h3>
                     <div class="round-date" v-if="round.start_date">
@@ -157,7 +156,7 @@
                   </div>
                   
                   <div class="games-list">
-                    <div v-for="game in round.games" :key="game.game_id" class="game-item">
+                    <div v-for="(game, gameIndex) in round.games" :key="game.game_id" class="game-item">
                       <div class="game-players">
                         <div class="player white">
                           <strong>{{ game.white.name || 'Sin jugador' }}</strong>
@@ -167,9 +166,8 @@
                           <select 
                             v-model="game.result" 
                             class="result-select"
-                            :data-cy="`select-1-${game.game_id}`"
+                            :data-cy="`select-${round.round_id}-${gameIndex + 1}`"
                           >
-                    
                             <option value="">-- Seleccionar --</option>
                             <option value="W">White wins (1-0)</option>
                             <option value="B">Black wins (0-1)</option>
@@ -179,7 +177,7 @@
                           
                           <span 
                             class="result-display"
-                            :data-cy="`input-1-${game.id}`"
+                            :data-cy="`input-${round.round_id}-${gameIndex + 1}`"
                           >
                             {{ formatGameResult(game.result) }}
                           </span>
@@ -190,8 +188,6 @@
                           <span v-if="game.black.rating" class="rating">({{ game.black.rating }})</span>
                         </div>
                       </div>
-
-                      <p>select-{{ round.id }}-{{ game.id }}</p>
                       
                       <div class="game-actions">
                         <div class="game-status" :class="game.finished ? 'finished' : 'pending'">
@@ -200,7 +196,7 @@
                         
                         <button 
                           class="submit-result-btn" 
-                          :data-cy="`button-1-${game.game_id}`"
+                          :data-cy="`button-${round.round_id}-${gameIndex + 1}`"
                           @click="submitGameResult(round.round_id, game)"
                         >
                           Enviar resultado
@@ -221,10 +217,9 @@
                 </div>
               </div>
             </div>
-            
             <!-- Sección de Clasificación -->
             <div class="section-container" data-cy="ranking-section">
-              <h2 class="section-title" data-cy="standing-accordion-button">Clasificación</h2>
+              <h2 class="tabs-header" data-cy="standing-accordion-button">Clasificación</h2>
               
               <div v-if="rankingsLoading" class="loading-state mini">
                 <div class="spinner"></div>
@@ -959,6 +954,7 @@ export default {
 .tabs-header {
   display: flex;
   border-bottom: 1px solid #e6d5f2;
+  padding: 15px 20px;
   background-color: #f8f5fb;
 }
 

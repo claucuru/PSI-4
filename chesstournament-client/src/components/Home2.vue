@@ -1,60 +1,31 @@
 <template>
-    <div class="home-page">
-      <HeaderComponent />
-      
-      <div class="hero-section">
-        <div class="hero-content">
-          <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
-          <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
-          <div data-cy="admin-log" class="admin-welcome-message">Hello, you are logged in as an administrator</div>
-          <router-link to="/createtournament" class="create-tournament-btn" data-cy="create-Tournament-button">
-            Crea un torneo
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          </router-link>
-        </div>
+  <div class="home-page">
+    <HeaderComponent />
+    
+    <div class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
+        <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
+        <div data-cy="admin-log" class="admin-welcome-message">Hello, you are logged in as an administrator</div>
+        <router-link to="/createtournament" class="create-tournament-btn" data-cy="create-Tournament-button">
+          Crea un torneo
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </router-link>
       </div>
-      
-      <div class="main-content">
-        <div class="container">
-          <div class="tournaments-header">
-            <h2 class="section-title">Torneos disponibles</h2>
-            
-            <div class="search-bar">
-              <input 
-                type="text" 
-                v-model="searchQuery" 
-                placeholder="Buscar torneos por nombre..."
-                @keyup.enter="handleSearch"
-                class="search-input"
-                data-cy="input-search"
-              >
-              <button class="search-button" @click="handleSearch" data-cy="submit-search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </button>
-            </div>
-          </div>
-        
-          <!-- Estado de error -->
-          <div v-if="apiErrors" class="error-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Ha ocurrido un error</h3>
-            <p>{{ apiErrors }}</p>
-          </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="container">
+        <div class="tournaments-header">
+          <h2 class="section-title">Torneos disponibles</h2>
           
           <div class="search-bar">
-            <input
-              type="text"
-              v-model="searchQuery"
+            <input 
+              type="text" 
+              v-model="searchQuery" 
               placeholder="Buscar torneos por nombre..."
               @keyup.enter="handleSearch"
               class="search-input"
@@ -152,7 +123,7 @@
               </div>
               
               <div class="tournament-footer">
-                <router-link :to="`/torneos/${tournament.id}`" class="view-details-btn">
+                <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn">
                   Ver detalles
                 </router-link>
               </div>
@@ -201,45 +172,46 @@
         </div>
       </div>
     </div>
-    <!-- Footer -->
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-logo">
-        <h3>TournamentMaster</h3>
-        <p>La plataforma líder para gestión de torneos de ajedrez.</p>
-      </div>
-      
-      <div class="footer-authors">
-        <h4>Desarrollado por:</h4>
-        <div class="authors-list">
-          <div class="author">
-            <div class="author-avatar">
-              <!-- Iniciales o ícono -->
-              <span>AP</span>
+  </div>
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <h3>TournamentMaster</h3>
+          <p>La plataforma líder para gestión de torneos de ajedrez.</p>
+        </div>
+        
+        <div class="footer-authors">
+          <h4>Desarrollado por:</h4>
+          <div class="authors-list">
+            <div class="author">
+              <div class="author-avatar">
+                <!-- Iniciales o ícono -->
+                <span>AP</span>
+              </div>
+              <div class="author-info">
+                <span class="author-name">Alejandra Palma</span>
+              </div>
             </div>
-            <div class="author-info">
-              <span class="author-name">Alejandra Palma</span>
-            </div>
-          </div>
-          
-          <div class="author">
-            <div class="author-avatar">
-              <span>CC</span>
-            </div>
-            <div class="author-info">
-              <span class="author-name">Claudia Cuevas</span>
+            
+            <div class="author">
+              <div class="author-avatar">
+                <span>CC</span>
+              </div>
+              <div class="author-info">
+                <span class="author-name">Claudia Cuevas</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="footer-copyright">
-        <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
+        
+        <div class="footer-copyright">
+          <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
+        </div>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
 </template>
 
 <script>

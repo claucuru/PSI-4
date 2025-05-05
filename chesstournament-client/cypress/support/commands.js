@@ -136,6 +136,7 @@ Cypress.Commands.add("delete_all_tournaments", () => {
     "reset_sequence('chess_models', 'Tournament')\n" +
     "reset_sequence('chess_models', 'Player')\n" +
     "reset_sequence('chess_models', 'Game')\n" +
+    "reset_sequence('chess_models', 'Round')\n" +
     "# FRST reset sequence then delete not the other way around\n" +
     "Tournament.objects.all().delete()\n" +
     "EOF\n";

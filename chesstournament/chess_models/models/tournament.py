@@ -244,13 +244,10 @@ def getRanking(tournament):
     results = getScores(tournament)
     results = getBlackWins(tournament, results)
     
-    # Verificar si el torneo tiene juegos
+    # Verificar si el torneo tiene juegos - REVISAMOS ESTA PARTE
     tournament_has_games = False
-    tournament_rounds = Round.objects.filter(tournament=tournament)
-    for round in tournament_rounds:
-        if Game.objects.filter(round=round).exists():
-            tournament_has_games = True
-            break
+    games_count = Game.objects.filter(round__tournament=tournament).count()
+    tournament_has_games = games_count > 0
     
     # Si no hay juegos, retornar un ranking inicial
     if not tournament_has_games:
@@ -265,7 +262,7 @@ def getRanking(tournament):
             }
         return ranked_results
     
-    # CAMBIO IMPORTANTE: Manejar el caso cuando rankingList está vacío
+    # Manejar el caso cuando rankingList está vacío
     try:
         ranking_criteria = list(
             tournament.rankingList.values_list('value', flat=True)
@@ -309,15 +306,13 @@ def getRanking(tournament):
         # Verificar si el jugador existe en los resultados
         if player in results:
             player_results = {
+                'score': results[player][RankingSystem.PLAIN_SCORE.value],
+                'WI': results[player][RankingSystem.WINS.value],
                 'rank': current_rank,
             }
             
             # Agregar solo las claves que existen en los resultados del jugador
-            for k in [
-                RankingSystem.PLAIN_SCORE.value,
-                RankingSystem.WINS.value,
-                RankingSystem.BLACKTIMES.value
-            ]:
+            for k in ranking_criteria:
                 if k in results[player]:
                     player_results[k] = results[player][k]
                 else:
@@ -335,5 +330,6 @@ def getRanking(tournament):
             }
             
         current_rank += 1
+
     
     return ranked_results

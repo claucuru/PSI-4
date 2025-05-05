@@ -454,6 +454,8 @@ class GetRanking(APIView):
         # Obtener el ranking usando la función existente
         ranking_data = getRanking(tournament)
 
+    
+
         # Preparar los datos para la respuesta en el formato que espera el test
         formatted_ranking = {}
         for player, data in ranking_data.items():

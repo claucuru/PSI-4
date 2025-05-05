@@ -396,8 +396,6 @@ export default {
             }
         },
 
-                
-                // Actualización para la preparación de jugadores al crear torneo
         async createTournament(event) {
             // Estamos usando form con @submit.prevent, así que no necesitamos preventDefault
             this.isLoading = true;
@@ -490,28 +488,30 @@ export default {
                     tournamentData.players = playersCSV;
                 }
 
-                // Añadir los métodos de ranking al objeto
-                tournamentData.ranking_methods = this.tournament.ranking_methods.map((method, index) => {
-                    return {
-                        value: method,
-                        order: index + 1 // La posición en la lista determina el orden
-                    };
-                });
+                // CORRECCIÓN: Añadir los métodos de ranking directamente como un array de strings
+                // en lugar de objetos con value y order
+                tournamentData.rankingList = this.tournament.ranking_methods;
                 
                 // Si faltan métodos de ranking y es Round Robin, añadir por defecto
-                if (tournamentData.ranking_methods.length < 2 && this.tournament.pairing_system === 'SR') {
-                    if (!this.tournament.ranking_methods.includes('BL')) {
-                        tournamentData.ranking_methods.push({
-                            value: 'BL',
-                            order: tournamentData.ranking_methods.length + 1
-                        });
+                if (this.tournament.pairing_system === 'SR' && (!tournamentData.rankingList || tournamentData.rankingList.length < 2)) {
+                    // Asegurarse de que rankingList sea un array
+                    if (!tournamentData.rankingList) {
+                        tournamentData.rankingList = [];
                     }
                     
-                    if (!this.tournament.ranking_methods.includes('WI')) {
-                        tournamentData.ranking_methods.push({
-                            value: 'WI',
-                            order: tournamentData.ranking_methods.length + 1
-                        });
+                    // Añadir Plain Score (PS) si no está ya
+                    if (!tournamentData.rankingList.includes('PS')) {
+                        tournamentData.rankingList.push('PS');
+                    }
+                    
+                    // Añadir Wins (WI) si no está ya
+                    if (!tournamentData.rankingList.includes('WI')) {
+                        tournamentData.rankingList.push('WI');
+                    }
+                    
+                    // Añadir Black Times (BT) si no está ya
+                    if (!tournamentData.rankingList.includes('BT')) {
+                        tournamentData.rankingList.push('BT');
                     }
                 }
                 
