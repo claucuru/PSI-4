@@ -20,6 +20,9 @@ urlpatterns = [
     path('get_players/<int:tournament_id>/', views.GetPlayers.as_view()),
     path('get_round_results/<int:tournament_id>/',
          views.GetRoundResults.as_view()),
+    path('add_ranking/<int:tournament_id>/',
+         views.AddRankingAPIView.as_view()),
+    path('add_ranking/', views.AddRankingAPIView.as_view()),
     # Game update endpoints
     path('update_lichess_game/', views.UpdateLichessGameAPIView.as_view()),
     path('update_otb_game/', views.UpdateOTBGameAPIView.as_view()),

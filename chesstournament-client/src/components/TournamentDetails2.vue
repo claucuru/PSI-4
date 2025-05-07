@@ -165,7 +165,7 @@
                         <div class="game-result">
                           <select 
                             v-model="game.result" 
-                            class="result-select"
+                            class="custom-select"
                             :data-cy="`select-${round.round_id}-${gameIndex + 1}`"
                           >
                             <option value="">-- Seleccionar --</option>
@@ -195,22 +195,14 @@
                         </div>
                         
                         <button 
-                          class="submit-result-btn" 
+                          class="edit-game-btn"
                           :data-cy="`button-${round.round_id}-${gameIndex + 1}`"
                           @click="submitGameResult(round.round_id, game)"
                         >
                           Enviar resultado
                         </button>
                         
-                        <button 
-                          class="edit-game-btn" 
-                          @click="openEditGameModal(round.round_id, game)"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                          </svg>
-                          Editar
-                        </button>
+        
                       </div>
                     </div>
                   </div>
@@ -260,109 +252,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Modal para editar partidas -->
-    <div v-if="showEditGameModal" class="modal-overlay">
-      <div class="modal-container">
-        <div class="modal-header">
-          <h3>Editar Partida</h3>
-          <button class="close-modal" @click="showEditGameModal = false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <div v-if="editingGameError" class="edit-game-error">
-            {{ editingGameError }}
-          </div>
-          
-          <div class="edit-game-form">
-            <div class="form-group">
-              <label>Jugador con blancas:</label>
-              <div class="player-info">
-                <strong>{{ editingGame?.white?.name || 'Sin jugador' }}</strong>
-                <span v-if="editingGame?.white?.rating" class="rating">
-                  ({{ editingGame.white.rating }})
-                </span>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Jugador con negras:</label>
-              <div class="player-info">
-                <strong>{{ editingGame?.black?.name || 'Sin jugador' }}</strong>
-                <span v-if="editingGame?.black?.rating" class="rating">
-                  ({{ editingGame.black.rating }})
-                </span>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Resultado:</label>
-              <select v-model="editingGame.result" class="form-control">
-                <option value="">-- Seleccionar resultado --</option>
-                <option value="W">Victoria blancas (1-0)</option>
-                <option value="B">Victoria negras (0-1)</option>
-                <option value="D">Tablas (½-½)</option>
-                <option value="F">Incomparecencia (F-F)</option>
-                <option value="">Pendiente</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label>Estado de la partida:</label>
-              <div class="toggle-switch">
-                <input 
-                  type="checkbox" 
-                  id="gameFinished" 
-                  v-model="editingGame.finished"
-                />
-                <label for="gameFinished">
-                  {{ editingGame.finished ? 'Finalizada' : 'Pendiente' }}
-                </label>
-              </div>
-            </div>
-            
-            <div class="form-group" v-if="editingGame.lichess_id">
-              <label>ID de Lichess:</label>
-              <input 
-                type="text" 
-                v-model="editingGame.lichess_id" 
-                class="form-control"
-                placeholder="ID de la partida en Lichess"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label>Fecha de la partida:</label>
-              <input 
-                type="date" 
-                v-model="editingGame.date" 
-                class="form-control"
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button class="btn btn-cancel" @click="showEditGameModal = false">
-            Cancelar
-          </button>
-          
-          <button 
-            class="btn btn-save" 
-            @click="saveGameChanges()"
-            :disabled="updateGameLoading"
-          >
-            <div v-if="updateGameLoading" class="mini-spinner"></div>
-            <span v-else>Guardar cambios</span>
-          </button>
         </div>
       </div>
     </div>
@@ -1591,5 +1480,50 @@ export default {
 .edit-game-btn svg {
   color: #9b59b6;
 }
+
+.custom-select {
+  appearance: none;
+  background-color: #f8f5fb;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239b59b6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  border: 1px solid #e6d5f2;
+  border-radius: 6px;
+  color: #6b5876;
+  font-size: 15px;
+  padding: 10px 36px 10px 15px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.custom-select:hover {
+  border-color: #d2b4e5;
+}
+
+.custom-select:focus {
+  border-color: #9b59b6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.15);
+}
+
+.custom-select:disabled {
+  background-color: #f0e6f7;
+  border-color: #e6d5f2;
+  color: #9f7ead;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .custom-select {
+    font-size: 14px;
+    padding: 8px 32px 8px 12px;
+    background-position: right 10px center;
+  }
+}
+ 
 
 </style>

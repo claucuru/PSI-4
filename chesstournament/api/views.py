@@ -147,6 +147,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
                 response_data = serializer.data
                 response_data['player_ids'] = player_ids
 
+
                 headers = self.get_success_headers(serializer.data)
                 return Response(
                     response_data,
@@ -971,3 +972,53 @@ class AdminUpdateGameAPIView(APIView):
                     {"result": False, "message": f"Error updating game: {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+            
+class AddRankingAPIView(APIView):
+    """APIView para añadir un ranking a un torneo."""
+    permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = [JSONRenderer]
+    
+    def post(self, request, tournament_id=None):
+        """Añade un ranking a un torneo.
+        
+        Args:
+            request: Objeto request de Django
+            tournament_id: ID del torneo
+        
+        Returns:
+            Response: Respuesta HTTP con el resultado de la operación
+        """
+        try:
+            # Si el tournament_id viene en la URL, úsalo
+            if tournament_id is None:
+                tournament_id = request.data.get('tournament_id')
+            
+            if not tournament_id:
+                return Response(
+                    {"result": False, "message": "Tournament ID is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            tournament = Tournament.objects.get(id=tournament_id)
+        except Tournament.DoesNotExist:
+            return Response(
+                {"result": False, "message": "Tournament not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # Obtener el ranking desde la solicitud
+        ranking = request.data.get('ranking')
+        if not ranking:
+            return Response(
+                {"result": False, "message": "Ranking data is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Añadir el ranking al torneo
+        tournament.addToRankingList(ranking)
+        tournament.save()
+        
+        return Response(
+            {"result": True, "message": "Ranking added successfully"},
+            status=status.HTTP_200_OK
+        )

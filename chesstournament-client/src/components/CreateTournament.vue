@@ -106,7 +106,7 @@
                                     type="checkbox" 
                                     :id="`ranking-option-${method.value.toLowerCase()}`"
                                     v-model="tournament.ranking_methods" 
-                                    :value="method.value"
+                                    :value="method"
                                     :data-cy="`ranking-method-${method.value.toLowerCase()}`"
                                 />
                                 <label :for="`ranking-option-${method.value.toLowerCase()}`">{{ method.label }}</label>
@@ -161,8 +161,6 @@
         </div>
     </div>
 </template>
-
-
 <script>
 import axios from 'axios';
 import { useRouter } from 'vue-router';
@@ -183,7 +181,7 @@ export default {
                 win_points: 1.0,
                 draw_points: 0.5,
                 lose_points: 0.0,
-                ranking_methods: [],
+                ranking_methods: [], // This will store only the values (e.g., 'WI', 'BU')
                 start_date: new Date().toISOString().split('T')[0], // Fecha actual para el inicio
             },
             playersText: '',
@@ -194,8 +192,8 @@ export default {
                 { value: 'BC', label: 'Buchholz cut 1 (BC)' },
                 { value: 'BA', label: 'Buchholz average (BA)' },
                 { value: 'SB', label: 'Sonneborn-Berger (SB)' },
-                { value: 'WI', label: 'Victorias (WI)' },
-                { value: 'BT', label: 'Juegos con negras (BT)' }
+                { value: 'WI', label: 'No. Wins (WI)' },
+                { value: 'BT', label: 'No. games played with Black (BT)' }
             ],
             isLoading: false,
             errorMessage: '',
@@ -360,6 +358,78 @@ export default {
             return true;
         },
 
+        // Función para añadir métodos de ranking al torneo creado
+        async addRankingMethodsToTournament(tournamentId) {
+            try {
+                let rankingMethods = [];
+                
+                // Determinar qué métodos de ranking se deben añadir
+                if (this.tournament.ranking_methods && this.tournament.ranking_methods.length > 0) {
+                    // Extraer solo los valores de los métodos de ranking seleccionados
+                    rankingMethods = this.tournament.ranking_methods.map(method => {
+                        // Si method ya es un string, devolverlo directamente
+                        if (typeof method === 'string') {
+                            return method;
+                        }
+                        // Si method es un objeto con value, extraer el value
+                        else if (method && method.value) {
+                            return method.value;
+                        }
+                        // Si no se puede determinar, retornar el método tal cual
+                        return method;
+                    });
+                }
+                
+                // Si faltan métodos de ranking y es Round Robin, añadir por defecto
+                if (this.tournament.pairing_system === 'SR' && rankingMethods.length < 2) {
+                    // Añadir Plain Score (PS) si no está ya
+                    if (!rankingMethods.includes('PS')) {
+                        rankingMethods.push('PS');
+                    }
+                    
+                    // Añadir Wins (WI) si no está ya
+                    if (!rankingMethods.includes('WI')) {
+                        rankingMethods.push('WI');
+                    }
+                    
+                    // Añadir Black Times (BT) si no está ya
+                    if (!rankingMethods.includes('BT')) {
+                        rankingMethods.push('BT');
+                    }
+                }
+                
+                // Si no hay métodos de ranking, no hacemos nada
+                if (rankingMethods.length === 0) {
+                    console.log('No hay métodos de ranking para añadir.');
+                    return;
+                }
+                
+                const token = this.authStore.getToken;
+                
+                // Añadir cada método de ranking al torneo usando una llamada API específica
+                for (const method of rankingMethods) {
+                    await axios.post(
+                        `http://localhost:8000/api/v1/add_ranking/${tournamentId}/`, // Añadir barra al final
+                        {
+                            ranking: method // Cambiar ranking_value por ranking
+                        },
+                        {
+                            headers: {
+                                'Authorization': `Token ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    console.log(`Método de ranking ${method} añadido al torneo ${tournamentId}`);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error al añadir métodos de ranking:', error);
+                return false;
+            }
+        },
+        
         // Función para generar rondas después de crear un torneo
         async createTournamentRounds(tournamentId, token) {
             try {
@@ -464,10 +534,10 @@ export default {
                     win_points: parseFloat(this.tournament.win_points),
                     draw_points: parseFloat(this.tournament.draw_points),
                     lose_points: parseFloat(this.tournament.lose_points),
-                    start_date: this.tournament.start_date
+                    start_date: this.tournament.start_date,
                 };
 
-                // CORRECCIÓN: Preparar correctamente los jugadores según el tipo de tablero
+                // Preparar correctamente los jugadores según el tipo de tablero
                 if (this.tournament.board_type === 'LIC') {
                     // Para torneos Lichess, asegurarse de enviar solamente los nombres de usuario
                     const playersArray = this.playersText.split('\n')
@@ -488,32 +558,8 @@ export default {
                     tournamentData.players = playersCSV;
                 }
 
-                // CORRECCIÓN: Añadir los métodos de ranking directamente como un array de strings
-                // en lugar de objetos con value y order
-                tournamentData.rankingList = this.tournament.ranking_methods;
-                
-                // Si faltan métodos de ranking y es Round Robin, añadir por defecto
-                if (this.tournament.pairing_system === 'SR' && (!tournamentData.rankingList || tournamentData.rankingList.length < 2)) {
-                    // Asegurarse de que rankingList sea un array
-                    if (!tournamentData.rankingList) {
-                        tournamentData.rankingList = [];
-                    }
-                    
-                    // Añadir Plain Score (PS) si no está ya
-                    if (!tournamentData.rankingList.includes('PS')) {
-                        tournamentData.rankingList.push('PS');
-                    }
-                    
-                    // Añadir Wins (WI) si no está ya
-                    if (!tournamentData.rankingList.includes('WI')) {
-                        tournamentData.rankingList.push('WI');
-                    }
-                    
-                    // Añadir Black Times (BT) si no está ya
-                    if (!tournamentData.rankingList.includes('BT')) {
-                        tournamentData.rankingList.push('BT');
-                    }
-                }
+                // No enviamos rankingList en la creación inicial
+                // Lo haremos después de crear el torneo
                 
                 // Obtener el token de autenticación del usuario desde el store
                 const token = this.authStore.getToken;
@@ -531,8 +577,14 @@ export default {
                 );
 
                 if (response && response.data) {
-                    // Torneo creado exitosamente, ahora generar las rondas
+                    // Torneo creado exitosamente
                     const tournamentId = response.data.id;
+                    this.tournament.id = tournamentId; // Guardar el ID del torneo creado
+                    
+                    // Ahora añadimos los métodos de ranking al torneo
+                    await this.addRankingMethodsToTournament(tournamentId);
+                    
+                    // Luego generamos las rondas
                     const roundsResult = await this.createTournamentRounds(
                         tournamentId, 
                         this.authStore.getToken
@@ -570,10 +622,8 @@ export default {
             router.push('/');
         }
     }
-
 }
 </script>
-
 <style scoped>
 .createtournament-container {
     min-height: 100vh;
