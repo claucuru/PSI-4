@@ -1,4 +1,4 @@
-export DJANGOPORT := 8000
+export DJANGOPORT := 8001
 export DEBUG := True
 export  PGHOST := localhost
 export  PGDATABASE := chess

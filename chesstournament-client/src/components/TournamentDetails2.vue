@@ -169,10 +169,10 @@
                             :data-cy="`select-${round.round_id}-${gameIndex + 1}`"
                           >
                             <option value="">-- Seleccionar --</option>
-                            <option value="W">White wins (1-0)</option>
-                            <option value="B">Black wins (0-1)</option>
-                            <option value="D">Draw (1/2-1/2)</option>
-                            <option value="F">Forfeit (F-F)</option>
+                            <option value="White wins (1-0)">White wins (1-0)</option>
+                            <option value="Black wins (0-1)">Black wins (0-1)</option>
+                            <option value="Draw (1/2-1/2)">Draw (1/2-1/2)</option>
+                            <option value="Forfeit (F-F)">Forfeit (F-F)</option>
                           </select>
                           
                           <span 
@@ -640,6 +640,36 @@ export default {
 }
 </script>
 <style scoped>
+.tournament-details-page {
+  color: #000;
+}
+
+.tournament-description h3,
+.tournament-description p,
+.tabs-header,
+.players-table th,
+.players-table td,
+.rankings-table th,
+.rankings-table td,
+.round-header h3,
+.player strong,
+.game-result,
+.modal-header h3,
+.form-group label {
+  color: #000 !important;
+}
+
+.tournament-status-banner,
+.game-status,
+.rating,
+.round-date,
+.empty-state h3,
+.empty-state p,
+.error-state {
+  
+}
+
+
 .tournament-details-page {
   min-height: 100vh;
   min-width: 100vw;

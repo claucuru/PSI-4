@@ -68,6 +68,23 @@ eaffelix, eaffelix@example.com
 jrcuesta, jrcuesta@example.com
 `;
 
+/*
+2
+typename, email 
+ertopo, ertopo@example.com 
+soria49, soria49@example.com 
+zaragozana, zaragozana@example.com 
+Clavada, Clavada@example.com rmarabini, 
+rmarabini@example.com jpvalle, 
+jpvalle@example.com oliva21, 
+oliva21@example.com Philippe2020, 
+Philippe2020@example.com eaffelix, eaffelix@example.com 
+jrcuesta, jrcuesta@example.com
+
+
+
+*/
+
   it("Round Robin OTB tournament, admin modifies resultss", () => {
     cy.delete_all_tournaments();
     cy.delete_all_players();
@@ -79,11 +96,17 @@ jrcuesta, jrcuesta@example.com
       headerOTB + players
     ); //add tournament name, different for each test.
 
+    // AÑADIDO POR ALEJANDRA Y CLAUDIA PARA QUE LE DE TIEMPO A CARGAR
+    cy.wait(5000)
+    
     // Go to main page and...
     cy.visit("/");
 
     // select tournament
+//    cy.get("[data-cy=" + tournament_name + "]").click();
+
     cy.get("[data-cy=" + tournament_name + "]").click();
+
 
     // Now we are in the games page
     games.forEach((tuple) => {

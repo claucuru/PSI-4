@@ -6,7 +6,7 @@ import axios from 'axios'
 import './assets/main.css'
 
 // Configuración global de Axios
-axios.defaults.baseURL = 'http://localhost:8000' // Ajusta esto a tu URL del backend
+axios.defaults.baseURL = 'http://localhost:8001' // Ajusta esto a tu URL del backend
 
 const app = createApp(App)
 const pinia = createPinia()

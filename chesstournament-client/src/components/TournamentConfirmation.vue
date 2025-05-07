@@ -147,7 +147,7 @@ export default {
     const error = ref(null);
     const route = useRoute();
     const router = useRouter();
-    const apiBaseUrl = "http://localhost:8000/api/v1";
+    const apiBaseUrl = "http://localhost:8001/api/v1";
 
     onMounted(async () => {
       // Obtenemos el ID del torneo de los parámetros de la ruta

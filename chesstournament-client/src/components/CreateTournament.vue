@@ -409,7 +409,7 @@ export default {
                 // Añadir cada método de ranking al torneo usando una llamada API específica
                 for (const method of rankingMethods) {
                     await axios.post(
-                        `http://localhost:8000/api/v1/add_ranking/${tournamentId}/`, // Añadir barra al final
+                        `http://localhost:8001/api/v1/add_ranking/${tournamentId}/`, // Añadir barra al final
                         {
                             ranking: method // Cambiar ranking_value por ranking
                         },
@@ -434,7 +434,7 @@ export default {
         async createTournamentRounds(tournamentId, token) {
             try {
                 const response = await axios.post(
-                'http://localhost:8000/api/v1/create_round/',
+                'http://localhost:8001/api/v1/create_round/',
                 {
                     tournament_id: tournamentId
                 },
@@ -566,7 +566,7 @@ export default {
 
                 // Realizar la solicitud API con el token del store
                 const response = await axios.post(
-                    'http://localhost:8000/api/v1/tournaments/',
+                    'http://localhost:8001/api/v1/tournaments/',
                     tournamentData,
                     {
                         headers: {

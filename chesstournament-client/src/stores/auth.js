@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         // Usando la API de Django con djoser para autenticación
-        const response = await axios.post('http://localhost:8000/api/v1/token/login/', {
+        const response = await axios.post('http://localhost:8001/api/v1/token/login/', {
           username,
           password
         })
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
     
     async fetchUserProfile() {
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/users/me/', {
+        const response = await axios.get('http://localhost:8001/api/v1/users/me/', {
           headers: {
             'Authorization': `Token ${this.token}`
           }
@@ -78,7 +78,7 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         // Envía la solicitud de logout al servidor
-        await axios.post('http://localhost:8000/api/v1/token/logout/', {}, {
+        await axios.post('http://localhost:8001/api/v1/token/logout/', {}, {
           headers: {
             'Authorization': `Token ${this.token}`,
             'Content-Type': 'application/json'
@@ -127,7 +127,7 @@ export const useAuthStore = defineStore('auth', {
           
           // En una implementación real, enviarías la foto al servidor:
           /*
-          await axios.post('http://localhost:8000/api/v1/users/update-photo/', 
+          await axios.post('http://localhost:8001/api/v1/users/update-photo/', 
             { photoUrl },
             { headers: { 'Authorization': `Token ${this.token}` }}
           )
