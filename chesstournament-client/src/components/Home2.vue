@@ -71,13 +71,14 @@
         <!-- Lista de torneos -->
          <!-- :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"-->
         <div v-else class="tournaments-grid">
-          <router-link
+          <div 
             v-for="tournament in tournaments" 
             :key="tournament.id" 
-            :to="`/tournamentdetail2/${tournament.id}`"
             class="tournament-card"
             :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"
           >
+          <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn" data-cy=" isSearching ? 'search-' + tournament.name : tournament.name">
+                
             <div class="tournament-image">
               <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
                 {{ getTournamentStatusText(tournament) }}
@@ -126,9 +127,14 @@
               
               <div class="tournament-footer">
                 <span class="view-details-btn"> Ver detalles</span>
+                <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn" data-cy=" isSearching ? 'search-' + tournament.name : tournament.name">
+                  Ver detalles
+                </router-link>
               </div>
             </div>
           </router-link>
+            </router-link>
+          </div>
         </div>
         
         <!-- Paginación -->
@@ -172,7 +178,7 @@
         </div>
       </div>
     </div>
-  </div>
+
   <!-- Footer -->
   <footer class="site-footer">
     <div class="container">
