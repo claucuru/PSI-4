@@ -443,7 +443,7 @@ export default {
 }
 
 .hero-title {
-  font-size: br42px;
+  font-size: 42px;
   font-weight: 700;
   margin-bottom: 16px;
 }
@@ -488,31 +488,38 @@ export default {
   display: flex;
   max-width: 500px;
   width: 100%;
+  border-radius: 8px;
+  overflow: hidden; /* Para que los bordes redondeados funcionen correctamente */
 }
 
 .search-input {
   border: 2px solid #e6d5f2;
+  border-right: none; /* Elimina el borde derecho para evitar doble borde */
   border-radius: 8px 0 0 8px;
   color: #333;
   flex: 1;
   font-size: 16px;
   padding: 12px 16px;
   transition: border-color 0.3s;
-}
-
-.search-input:focus {
-  border-color: #bb8fce;
-  outline: none;
+  margin: 0; /* Elimina cualquier margen que pueda causar espacios */
 }
 
 .search-button {
   background-color: #9b59b6;
-  border: none;
+  border: 2px solid #9b59b6; /* Añade un borde del mismo color para alinearlo */
   border-radius: 0 8px 8px 0;
   color: white;
   cursor: pointer;
   padding: 0 20px;
   transition: background-color 0.3s;
+  display: flex;         /* Asegura que el ícono esté centrado */
+  align-items: center;   /* Centra verticalmente */
+  justify-content: center; /* Centra horizontalmente */
+}
+
+.search-input:focus {
+  border-color: #bb8fce;
+  outline: none;
 }
 
 .search-button:hover {
