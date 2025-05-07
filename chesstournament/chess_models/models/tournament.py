@@ -167,17 +167,17 @@ def getScores(tournament):
     for tournament_round in tournament_rounds:
         games = Game.objects.filter(round=tournament_round)
         for game in games:
-            if game.result == Scores.WHITE.value:
+            if game.result == 'W':
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.win_points
                 if game.black in results:
                     results[game.black][PLAIN_SCORE] += tournament.lose_points
-            elif game.result == Scores.BLACK.value:
+            elif game.result == 'B':
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.lose_points
                 if game.black in results:
                     results[game.black][PLAIN_SCORE] += tournament.win_points
-            elif game.result == Scores.DRAW.value:
+            elif game.result == 'D':
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.draw_points
                 if game.black in results:
@@ -227,10 +227,10 @@ def getBlackWins(tournament, results):
                 if game.black in results:
                     results[game.black][BLACKTIMES] += 1
 
-                if game.result == Scores.WHITE.value:
+                if game.result == 'W':
                     if game.white in results:
                         results[game.white][WINS] += 1
-                elif game.result == Scores.BLACK.value:
+                if game.result == 'B':
                     if game.black in results:
                         results[game.black][WINS] += 1
 
@@ -306,18 +306,17 @@ def getRanking(tournament):
         # Verificar si el jugador existe en los resultados
         if player in results:
             player_results = {
-                'score': results[player][RankingSystem.PLAIN_SCORE.value],
-                'WI': results[player][RankingSystem.WINS.value],
                 'rank': current_rank,
+                RankingSystem.PLAIN_SCORE.value: results[player].get(
+                    RankingSystem.PLAIN_SCORE.value, 0
+                ),
+                RankingSystem.WINS.value: results[player].get(
+                    RankingSystem.WINS.value, 0
+                ),
+                RankingSystem.BLACKTIMES.value: results[player].get(
+                    RankingSystem.BLACKTIMES.value, 0
+                )
             }
-            
-            # Agregar solo las claves que existen en los resultados del jugador
-            for k in ranking_criteria:
-                if k in results[player]:
-                    player_results[k] = results[player][k]
-                else:
-                    # Proporcionar un valor predeterminado
-                    player_results[k] = 0
                     
             ranked_results[player] = player_results
         else:

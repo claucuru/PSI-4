@@ -77,7 +77,7 @@
             class="tournament-card"
             :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"
           >
-          <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn" data-cy=" isSearching ? 'search-' + tournament.name : tournament.name">
+          <router-link :to="`/tournamentdetail2/${tournament.id}`" data-cy=" isSearching ? 'search-' + tournament.name : tournament.name">
                 
             <div class="tournament-image">
               <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
@@ -126,14 +126,12 @@
               </div>
               
               <div class="tournament-footer">
-                <span class="view-details-btn"> Ver detalles</span>
                 <router-link :to="`/tournamentdetail2/${tournament.id}`" class="view-details-btn" data-cy=" isSearching ? 'search-' + tournament.name : tournament.name">
                   Ver detalles
                 </router-link>
               </div>
             </div>
           </router-link>
-            </router-link>
           </div>
         </div>
         
@@ -178,6 +176,7 @@
         </div>
       </div>
     </div>
+  </div>
 
   <!-- Footer -->
   <footer class="site-footer">

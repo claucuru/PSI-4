@@ -23,6 +23,7 @@ from chess_models.models.referee import Referee
 from chess_models.models.round import Round
 from chess_models.models.tournament import RankingSystem, Tournament
 from chess_models.models.tournament import getRanking
+from chess_models.models.constants import Scores
 from .serializers import (GameSerializer, PlayerSerializer, RefereeSerializer,
                           RoundSerializer, TournamentSerializer)
 
@@ -929,6 +930,7 @@ class AdminUpdateGameAPIView(APIView):
         elif 'otb_result' in request.data:
             # Si tiene otb_result, procesar como actualización OTB
             otb_result = request.data.get('otb_result')
+
             
             # Establecer el resultado directamente
             game.result = otb_result
@@ -943,12 +945,9 @@ class AdminUpdateGameAPIView(APIView):
         else:
             # Manejo de la actualización directa de los campos result, finished y update_date
             try:
-                # Actualizar los campos específicos recibidos en la solicitud
-                if 'result' in request.data:
-                    game.result = request.data.get('result')
-                
-                if 'finished' in request.data:
-                    game.finished = request.data.get('finished')
+                result = request.data.get('result')
+                game.result = result if result else game.result
+                game.finished = True
                 
                 # Gestionar la fecha de actualización si se proporciona
                 game.update_date = timezone.now()
@@ -970,7 +969,7 @@ class AdminUpdateGameAPIView(APIView):
             except Exception as e:
                 return Response(
                     {"result": False, "message": f"Error updating game: {str(e)}"},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    status=status.HTTP_500_BAD_GATEWAY
                 )
             
 class AddRankingAPIView(APIView):

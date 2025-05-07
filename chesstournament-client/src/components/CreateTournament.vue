@@ -625,9 +625,10 @@ export default {
 }
 </script>
 <style scoped>
+
 .createtournament-container {
     min-height: 100vh;
-    min-width: 100vw;
+    width: 80vw;
     background-color: #f8f9fa;
 }
 
@@ -638,14 +639,18 @@ export default {
 
 /* Sección izquierda con imagen de fondo */
 .chess-tournament-bg {
-    width: 40%;
+    width: 50%;
     background-image: url('../components/icons/chess.jpg');
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    position: fixed; /* Cambio clave: fijar posición */
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
 }
 
 /* Capa oscura para mejorar legibilidad del texto */
@@ -666,6 +671,15 @@ export default {
     position: relative;
     z-index: 1;
     color: white;
+}
+
+/* Formulario de creación */
+.create-tournament-form {
+    width: 60%;
+    padding: 40px;
+    background-color: white;
+    overflow-y: auto;
+    margin-left: 40%; /* Importante: añadir margen izquierdo igual al ancho de la columna fija */
 }
 
 .login-brand {

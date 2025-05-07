@@ -126,8 +126,7 @@
                   </tbody>
                 </table>
               </div>
-            </div>
-            <!-- Sección de Rondas y Partidas -->
+            </div><!-- Sección de Rondas y Partidas -->
             <div class="section-container">
               <h2 class="tabs-header">Rondas y Partidas</h2>
               
@@ -166,18 +165,18 @@
                           <select 
                             v-model="game.result" 
                             class="custom-select"
-                            :data-cy="`select-${round.round_id}-${gameIndex + 1}`"
+                            :data-cy="`select-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             <option value="">-- Seleccionar --</option>
                             <option value="White wins (1-0)">White wins (1-0)</option>
-                            <option value="Black wins (0-1)">Black wins (0-1)</option>
-                            <option value="Draw (1/2-1/2)">Draw (1/2-1/2)</option>
-                            <option value="Forfeit (F-F)">Forfeit (F-F)</option>
+                            <option value="B">Black wins (0-1)</option>
+                            <option value="D">Draw (1/2-1/2)</option>
+                            <option value="F">Forfeit (F-F)</option>
                           </select>
                           
                           <span 
                             class="result-display"
-                            :data-cy="`input-${round.round_id}-${gameIndex + 1}`"
+                            :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             {{ formatGameResult(game.result) }}
                           </span>
@@ -196,13 +195,11 @@
                         
                         <button 
                           class="edit-game-btn"
-                          :data-cy="`button-${round.round_id}-${gameIndex + 1}`"
+                          :data-cy="`button-${round.round_id}-${round.games.length - gameIndex}`"
                           @click="submitGameResult(round.round_id, game)"
                         >
                           Enviar resultado
                         </button>
-                        
-        
                       </div>
                     </div>
                   </div>
@@ -210,6 +207,7 @@
               </div>
             </div>
             <!-- Sección de Clasificación -->
+            <!-- Reemplaza la sección de la tabla de clasificación en el HTML -->
             <div class="section-container" data-cy="ranking-section">
               <h2 class="tabs-header" data-cy="standing-accordion-button">Clasificación</h2>
               
@@ -233,19 +231,20 @@
                   <thead>
                     <tr>
                       <th>Pos</th>
-                      <th>Jugador</th>
-                      <th>Puntos</th>
-                      <th>Negras</th>
-                      <th>Victorias</th>
+                      <th>Name</th>
+                      <th>Points</th>
+                      <th>Black</th>
+                      <th>Wins</th>
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- Asegúrate de que cada celda esté en su propia columna y corresponda al orden esperado por el test -->
                     <tr v-for="(player, index) in rankingsSorted" :key="player.id" :data-cy="`ranking-${index + 1}`">
                       <td>{{ player.rank }}</td>
                       <td>{{ player.name }}</td>
                       <td>{{ player.score }}</td>
-                      <td>{{ player.BLACKTIMES }}</td>
-                      <td>{{ player.WINS }}</td>
+                      <td>{{ player.BT }}</td>
+                      <td>{{ player.WI }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -405,7 +404,6 @@ export default {
         roundsLoading.value = false
       }
     }
-    
     // Función para enviar el resultado de una partida
     const submitGameResult = async (roundId, game) => {
       try {
@@ -421,11 +419,17 @@ export default {
         if (!userEmail) {
           return // Si el usuario cancela, no continuar
         }
+
+        // Convertir el resultado al formato correcto para la API
+        let resultCode = game.result
+        if (game.result === 'White wins (1-0)') {
+          resultCode = "W"
+        }
         
         // Preparar datos para enviar
         const gameData = {
           game_id: game.game_id,
-          result: game.result,
+          result: resultCode,
           email: userEmail
         }
         
@@ -444,18 +448,8 @@ export default {
         console.error('Error al enviar el resultado:', error)
         alert('Error al enviar el resultado. Por favor, inténtalo de nuevo.')
       }
-    }
-    
-    // Abrir el modal para editar una partida
-    const openEditGameModal = (roundId, game) => {
-      // Crear una copia profunda del objeto para no modificar directamente el original
-      editingGame.value = JSON.parse(JSON.stringify(game))
-      editingGame.value.id = game.game_id // Asegurarse de que el ID de la partida esté presente
-      editingRoundId.value = roundId
-      editingGameError.value = null
-      showEditGameModal.value = true
-    }
-    
+        }
+
     // Guardar los cambios de la partida
     const saveGameChanges = async () => {
       updateGameLoading.value = true
@@ -466,6 +460,12 @@ export default {
         if (editingGame.value.result && !editingGame.value.finished) {
           editingGame.value.finished = true
         }
+
+        // Convertir el resultado al formato correcto para la API
+        let resultCode = editingGame.value.result
+        if (editingGame.value.result === 'White wins (1-0)') {
+          resultCode = "W"
+        }
         
         // Enviar los datos actualizados a la API
         const response = await axios.post(
@@ -473,7 +473,7 @@ export default {
           {
             // Asegúrate de incluir todos los campos necesarios en el cuerpo de la solicitud
             game_id: editingGame.value.game_id,
-            result: editingGame.value.result,
+            result: resultCode,
             finished: editingGame.value.finished,
           }
         )
@@ -508,6 +508,16 @@ export default {
       } finally {
         updateGameLoading.value = false
       }
+    }
+    
+    // Abrir el modal para editar una partida
+    const openEditGameModal = (roundId, game) => {
+      // Crear una copia profunda del objeto para no modificar directamente el original
+      editingGame.value = JSON.parse(JSON.stringify(game))
+      editingGame.value.id = game.game_id // Asegurarse de que el ID de la partida esté presente
+      editingRoundId.value = roundId
+      editingGameError.value = null
+      showEditGameModal.value = true
     }
     
     // Formateador de fechas
@@ -580,7 +590,7 @@ export default {
     // Formatear el resultado de la partida para mostrar
     const formatGameResult = (result) => {
       const resultMap = {
-        'W': '1-0',
+        'White wins (1-0)': '1-0',
         'B': '0-1',
         'D': '½-½',
         'F': 'F-F' // Forfeit
@@ -592,7 +602,7 @@ export default {
     // Obtener la clase CSS según el resultado
     const getGameResultClass = (result) => {
       return {
-        'W': 'white-win',
+        'White wins (1-0)': 'white-win',
         'B': 'black-win',
         'D': 'draw',
         'F': 'forfeit'
@@ -640,36 +650,6 @@ export default {
 }
 </script>
 <style scoped>
-.tournament-details-page {
-  color: #000;
-}
-
-.tournament-description h3,
-.tournament-description p,
-.tabs-header,
-.players-table th,
-.players-table td,
-.rankings-table th,
-.rankings-table td,
-.round-header h3,
-.player strong,
-.game-result,
-.modal-header h3,
-.form-group label {
-  color: #000 !important;
-}
-
-.tournament-status-banner,
-.game-status,
-.rating,
-.round-date,
-.empty-state h3,
-.empty-state p,
-.error-state {
-  
-}
-
-
 .tournament-details-page {
   min-height: 100vh;
   min-width: 100vw;
