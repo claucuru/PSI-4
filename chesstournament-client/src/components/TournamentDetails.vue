@@ -159,7 +159,7 @@
                   <div class="games-list">
                     <div v-for="(game, gameIndex) in round.games" :key="game.game_id" 
                         class="game-item" 
-                        :data-cy="`game_${roundIndex + 1}_${gameIndex + 1}`">
+                        :data-cy="`game_${roundIndex + 1}_${round.games.length - gameIndex}`">
                       <div class="game-players">
                         <div class="player white">
                           <strong>{{ game.white.name || 'Sin jugador' }}</strong>
@@ -171,7 +171,7 @@
                             v-if="!isAdmin"
                             v-model="game.result" 
                             class="custom-select"
-                            :data-cy="`select-${round.round_id}-${gameIndex + 1}`"
+                            :data-cy= "`select-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             <option value="">-- Seleccionar --</option>
                             <option value="White wins (1-0)">White wins (1-0)</option>
@@ -185,7 +185,7 @@
                             v-if="isAdmin"
                             v-model="game.result" 
                             class="custom-select"
-                            :data-cy="`select-admin-${round.round_id}-${gameIndex + 1}`"
+                            :data-cy="`select-admin-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             <option value="">-- Seleccionar --</option>
                             <option value="White wins (1-0)">White wins (1-0)</option>
@@ -194,9 +194,17 @@
                             <option value="F">Forfeit (F-F)</option>
                           </select>
                           
+                          <input 
+                            type="text"
+                            v-model="game.gameId"
+                            class="edit-game-btn"
+                            :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
+                            placeholder="ID de la partida"
+                          />
+
                           <span 
                             class="result-display"
-                            :data-cy="`input-${round.round_id}-${gameIndex + 1}`"
+                            :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             {{ formatGameResult(game.result) }}
                           </span>
@@ -215,7 +223,7 @@
                         
                         <button 
                           class="edit-game-btn"
-                          :data-cy="`button-${isAdmin ? 'admin-' : ''}${round.round_id}-${gameIndex + 1}`" 
+                          :data-cy="`button-${isAdmin ? 'admin-' : ''}${round.round_id}-${round.games.length - gameIndex}`" 
                           @click="submitGameResult(round.round_id, game)"
                         >
                           Enviar resultado
@@ -329,6 +337,7 @@ import axios from 'axios'
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import HeaderComponent from './Header.vue'
+import { useAuthStore } from '@/stores/auth'
 
 export default {
   name: 'TournamentDetails',
@@ -338,6 +347,7 @@ export default {
   setup() {
     const route = useRoute()
     const tournamentId = computed(() => route.params.id)
+    const authStore = useAuthStore() // store de autenticación
     
     // Estado
     const isLoading = ref(true)
@@ -388,16 +398,8 @@ export default {
     }
 
     const getCurrentUserId = () => {
-        const userStr = localStorage.getItem('user')
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr)
-                return user.id
-            } catch (e) {
-                console.error('Error al obtener ID de usuario:', e)
-            }
-        }
-        return null
+      const user = authStore.getUser
+      return user ? user.id : null
     }
     
     const loadTournament = async () => {
@@ -487,73 +489,84 @@ export default {
         }
     }
 
-    // Función para enviar el resultado de una partida
-    const submitGameResult = async (roundId, game) => {
-        try {
-            // Si no hay resultado seleccionado, no enviar
-            if (!game.result) {
-                alert('Por favor, selecciona un resultado antes de enviar.')
-                return
-            }
-            
-            // Convertir el resultado al formato correcto para la API
-            let resultCode = game.result
-            if (game.result === 'White wins (1-0)') {
-                resultCode = "W"
-            }
-            
-            // Preparar datos para enviar
-            const gameData = {
-                game_id: game.game_id,
-                result: resultCode
-            }
-            
-            if (!isAdmin.value) {
-                // Si no es admin, solicitar correo para verificación
-                const userEmail = window.prompt('Por favor, ingresa tu correo electrónico para confirmar:')
-                
-                if (!userEmail) {
-                    return // Si el usuario cancela, no continuar
-                }
-                
-                // Validar el formato del correo electrónico
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                if (!emailRegex.test(userEmail)) {
-                    alert('Por favor, ingresa un correo electrónico válido.')
-                    return
-                }
-                
-                // Añadir email a los datos
-                gameData.email = userEmail
-                
-                // Enviar resultado a la API para usuarios normales
-                const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
-                console.log('Resultado enviado correctamente:', response.data)
-            } else {
-                // Enviar resultado a la API para administradores
-                const response = await axios.post(`${apiBaseUrl}/admin_update_game/`, gameData)
-                console.log('Resultado enviado correctamente (admin):', response.data)
-            }
-            
-            // Marcar la partida como finalizada
-            game.finished = true
-            
-            // Recargar la clasificación para reflejar los cambios
-            loadRankings()
-            
-            // Mensaje de éxito
-            alert(isAdmin.value ? 'Resultado actualizado correctamente (como administrador).' : 'Resultado enviado correctamente.')
-            
-        } catch (error) {
-            console.error('Error al enviar el resultado:', error)
-            alert('Error al enviar el resultado. Por favor, inténtalo de nuevo.')
-            
-            // Si hay un error específico de la API, mostrarlo
-            if (error.response && error.response.data && error.response.data.detail) {
-                alert(`Error: ${error.response.data.detail}`)
-            }
-        }
+
+// Función para enviar el resultado de una partida
+const submitGameResult = async (roundId, game) => {
+  try {
+    // Si no hay resultado seleccionado, no enviar
+    if (!game.result) {
+      alert('Por favor, selecciona un resultado antes de enviar.')
+      return
     }
+    
+    let resultCode = game.result
+    if (game.result === 'White wins (1-0)') {
+      resultCode = "W"
+    }
+    
+    // Preparar datos para enviar - asegurarse de que el formato es correcto
+    const gameData = {
+      game_id: game.game_id,
+      result: resultCode, // Ya no convertir, usar directamente lo seleccionado
+      finished: true // Siempre marcar como finalizado al enviar un resultado
+    }
+    
+    console.log('Enviando datos de juego:', gameData)
+    
+    // SOLUCIÓN: Obtener el token de autenticación desde el store
+    const authStore = useAuthStore()
+    const token = authStore.getToken
+    
+    // Preparar headers con el token
+    const headers = {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json'
+    }
+    
+    if (!isAdmin.value) {
+      // Si no es admin, solicitar correo para verificación
+      const userEmail = window.prompt('Por favor, ingresa tu correo electrónico para confirmar:')
+      if (!userEmail) {
+        return // Si el usuario cancela, no continuar
+      }
+      // Añadir el email a los datos enviados
+      gameData.email = userEmail
+      // Enviar resultado a la API para usuarios normales
+      const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
+      console.log('Resultado enviado correctamente:', response.data)
+    } else {
+      // Enviar resultado a la API para administradores
+      // SOLUCIÓN: Añadir headers con el token en la solicitud
+      const response = await axios.post(
+        `${apiBaseUrl}/admin_update_game/`, 
+        gameData,
+        { headers }
+      )
+      console.log('Resultado enviado correctamente (admin):', response.data)
+    }
+    
+    await loadRankings()
+    // Mensaje de éxito
+    alert(isAdmin.value ? 'Resultado actualizado correctamente (como administrador).' : 'Resultado enviado correctamente.')
+    game.finished = true
+  } catch (error) {
+    console.error('Error al enviar el resultado:', error)
+    // Mostrar mensaje de error con detalles específicos si están disponibles
+    let errorMessage = 'Error al enviar el resultado. Por favor, inténtalo de nuevo.'
+    if (error.response) {
+      console.log('Error response:', error.response)
+      if (error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = `Error: ${error.response.data.message}`
+        } else if (error.response.data.detail) {
+          errorMessage = `Error: ${error.response.data.detail}`
+        }
+      }
+    }
+    alert(errorMessage)
+    globalError.value = errorMessage
+  }
+}
 
     // Guardar los cambios de la partida
     const saveGameChanges = async () => {

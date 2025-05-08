@@ -84,6 +84,8 @@ jrcuesta
       tournament_name,
       headerLIC + playersLIC
     ); //add tournament name, different for each test.
+    //añadido por claudia y alejandra
+    cy.wait(5000);
     // Go to main page
     cy.visit("/");
 

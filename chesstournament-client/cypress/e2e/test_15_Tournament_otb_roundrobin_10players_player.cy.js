@@ -139,14 +139,15 @@ jrcuesta, jrcuesta@example.com
       headerOTB + players
     ); //add tournament name, different for each test.
 
-    // Go to main page and...
-    // cy.visit('/') // if you do this token is lost
-    //               // and you need to clean it in the store
-    // AÑADIDO POR ALEJANDRA Y CLAUDIA PARA QUE LE DE TIEMPO A CARGAR
-     cy.wait(5000)
+    // añadido por claudia y alejandra
+    cy.wait(5000);
 
+    /// DESCOMENTADAS POR NOSOTRAS LAS SIGUIENTES DOS LINEAS
+    // Go to main page and...
+     cy.visit('/') // if you do this token is lost
+    //               // and you need to clean it in the store
     // ... select tournament
-    // cy.get('[data-cy=tournament_SR]').click();
+    cy.get('[data-cy=tournament_SR]').click();
 
     // Now we are in the games page
     games.forEach((tuple, index) => {
