@@ -27,6 +27,7 @@ urlpatterns = [
     path('update_lichess_game/', views.UpdateLichessGameAPIView.as_view()),
     path('update_otb_game/', views.UpdateOTBGameAPIView.as_view()),
     path('admin_update_game/', views.AdminUpdateGameAPIView.as_view()),
+     path('update_game/', views.UpdateGameAPIView.as_view()),
     # Authentication endpoints
     path('', include('djoser.urls')),
     path('', include('djoser.urls.authtoken')),

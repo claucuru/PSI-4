@@ -5,8 +5,8 @@ import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user')) || null,
+    token: null,
+    user:  null,
     loading: false,
     error: null
   }),
@@ -31,7 +31,6 @@ export const useAuthStore = defineStore('auth', {
         
         // Guardar el token en el estado y localStorage
         this.token = response.data.auth_token
-        localStorage.setItem('token', this.token)
         
         // Obtener información del usuario
         await this.fetchUserProfile()
@@ -64,8 +63,6 @@ export const useAuthStore = defineStore('auth', {
           photoUrl: response.data.photoUrl || savedPhotoUrl || null
         }
         
-        // Guardar el usuario con la foto en localStorage
-        localStorage.setItem('user', JSON.stringify(this.user))
         return this.user
       } catch (err) {
         console.error('Error al obtener perfil de usuario:', err)
@@ -101,6 +98,8 @@ export const useAuthStore = defineStore('auth', {
       // Nota: NO eliminamos las fotos de perfil guardadas para conservarlas entre sesiones
       this.token = null
       this.user = null
+      this.loading = false
+      this.error = null
       
       // Limpiar solo el token y el usuario actual del localStorage
       localStorage.removeItem('token')
@@ -121,17 +120,6 @@ export const useAuthStore = defineStore('auth', {
           if (this.user.username) {
             localStorage.setItem(`userPhoto_${this.user.username}`, photoUrl)
           }
-          
-          // Actualizar el objeto de usuario en localStorage
-          localStorage.setItem('user', JSON.stringify(this.user))
-          
-          // En una implementación real, enviarías la foto al servidor:
-          /*
-          await axios.post('http://localhost:8001/api/v1/users/update-photo/', 
-            { photoUrl },
-            { headers: { 'Authorization': `Token ${this.token}` }}
-          )
-          */
           
           return true
         }

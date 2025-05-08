@@ -10,7 +10,6 @@ import LogoutSuccessView from '../components/Logout.vue'
 import Perfil from '../components/Perfil.vue'
 import TournamentConfirmation from '../components/TournamentConfirmation.vue'
 import TournamentDetails from '../components/TournamentDetails.vue'
-import TournamentDetails2 from '../components/TournamentDetails2.vue'
 import { useAuthStore } from '../stores/auth'
 
 const router = createRouter({
@@ -60,11 +59,6 @@ const router = createRouter({
       component: TournamentDetails,
     },
     {
-      path: '/tournamentdetail2/:id',
-      name: 'tournament-details2',
-      component: TournamentDetails2,
-    },
-    {
       path: '/profile',
       name: 'perfil',
       component: Perfil,
@@ -74,7 +68,7 @@ const router = createRouter({
 })
 
 // Navegación guard para proteger rutas
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
   // Si la ruta requiere autenticación y el usuario no está autenticado
@@ -82,8 +76,18 @@ router.beforeEach((to, from, next) => {
     next({ name: 'login' })
   }
   // Si la ruta es solo para invitados y el usuario está autenticado
-  else if (to.meta.requiresGuest && authStore.isAuthenticated){
-    next({ name: 'home2' })
+  // MODIFICADO: Solo redirigir si está intentando acceder a login Y está autenticado Y viene de una ruta logout
+  else if (to.name === 'login' && authStore.isAuthenticated && from.name == 'logout-success'){
+    // Verificar que el token sea válido antes de redirigir
+    try {
+      // Opcional: Verificar token con el servidor
+      // await authStore.verifyToken()
+      next({ name: 'home2' })
+    } catch (error) {
+      // Si el token no es válido, limpiar auth y permitir acceso a login
+      authStore.clearAuth()
+      next()
+    }
   }
   else {
     next()

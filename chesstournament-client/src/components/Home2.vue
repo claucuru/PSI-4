@@ -223,6 +223,7 @@
 import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 import HeaderComponent from './Header.vue'
+import { useAuthStore } from '../stores/auth'
 
 export default {
   name: 'HomeView',
@@ -241,6 +242,8 @@ export default {
     
     // Configurar la URL base para las solicitudes a la API
     const apiBaseUrl = '/api/v1'
+
+    const authStore = useAuthStore()
     
     const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
     
@@ -409,6 +412,7 @@ export default {
       
       onMounted(() => {
         loadTournaments()
+
       })
       
       return {

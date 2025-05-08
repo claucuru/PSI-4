@@ -126,6 +126,8 @@ class TournamentViewSet(viewsets.ModelViewSet):
                 if 'players' in tournament_data:
                     del tournament_data['players']
 
+                tournament_data['administrativeUser'] = request.user.id
+
                 # Validar y guardar torneo
                 serializer = self.get_serializer(data=tournament_data)
                 serializer.is_valid(raise_exception=True)
@@ -1021,3 +1023,144 @@ class AddRankingAPIView(APIView):
             {"result": True, "message": "Ranking added successfully"},
             status=status.HTTP_200_OK
         )
+    
+
+
+class UpdateGameAPIView(APIView):
+    """APIView para que actualicen partidas de cualquier tipo."""
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request):
+        """Permite a un administrador actualizar una partida.
+        Dependiendo de los parámetros, redirige a la vista de Lichess o OTB.
+
+        Args:
+            request: Objeto request de Django
+
+        Returns:
+            Response: Respuesta HTTP con el resultado de la operación
+        """
+        # Obtener el ID del juego y verificar que existe
+        game_id = request.data.get('game_id')
+        if not game_id:
+            return Response(
+                {"result": False, "message": "Game ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            game = Game.objects.get(id=game_id)
+        except Game.DoesNotExist:
+            return Response(
+                {"result": False, "message": "Game not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Determinar el tipo de actualización según los parámetros recibidos
+        if 'lichess_game_id' in request.data:
+            # Si tiene lichess_game_id, procesar como actualización de Lichess
+            lichess_game_id = request.data.get('lichess_game_id')
+            
+            if not lichess_game_id:
+                return Response(
+                    {"result": False, "message": "Lichess game ID is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            try:
+                with transaction.atomic():
+                    result = white_username = black_username = None
+                    result_data = game.get_lichess_game_result(lichess_game_id)
+                    result, white_username, black_username = result_data
+
+                    game_data = {
+                        'game_id': game.id,
+                        'lichess_game_id': lichess_game_id,
+                        'result': result,
+                        'white_username': white_username,
+                        'black_username': black_username,
+                    }
+
+                    game_serializer = GameSerializer(game, data=game_data,
+                                                    partial=True)
+                    game_serializer.is_valid(raise_exception=True)
+                    game_serializer.save()
+
+                    return Response(
+                        {
+                            "result": True,
+                            "message": (
+                                f"Game updated successfully with {game.result}"
+                            )
+                        },
+                        status=status.HTTP_200_OK
+                    )
+
+            except LichessAPIError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except requests.RequestException:
+                return Response(
+                    {
+                        "result": False,
+                        "message": (
+                            f"Failed to fetch data for "
+                            f"game {lichess_game_id} "
+                            f"from Lichess"
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except ValidationError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        elif 'otb_result' in request.data:
+            # Si tiene otb_result, procesar como actualización OTB
+            otb_result = request.data.get('otb_result')
+
+            
+            # Establecer el resultado directamente
+            game.result = otb_result
+            game.finished = True  # Marcar el juego como finalizado
+            game.save()
+
+            return Response(
+                {"result": True, "message": "Game updated successfully"},
+                status=status.HTTP_200_OK
+            )
+            
+        else:
+            # Manejo de la actualización directa de los campos result, finished y update_date
+            try:
+                result = request.data.get('result')
+                game.result = result if result else game.result
+                game.finished = True
+                
+                # Gestionar la fecha de actualización si se proporciona
+                game.update_date = timezone.now()
+                if 'update_date' in request.data:
+                    game.update_date = request.data.get('update_date')
+                
+                # Guardar los cambios
+                game.save()
+                
+                return Response(
+                    {"result": True, "message": "Game updated successfully"},
+                    status=status.HTTP_200_OK
+                )
+            except ValidationError as e:
+                return Response(
+                    {"result": False, "message": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Exception as e:
+                return Response(
+                    {"result": False, "message": f"Error updating game: {str(e)}"},
+                    status=status.HTTP_500_BAD_GATEWAY
+                )
+            

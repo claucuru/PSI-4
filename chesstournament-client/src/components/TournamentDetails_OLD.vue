@@ -4,7 +4,7 @@
     
     <div class="hero-section">
       <div class="hero-content">
-        <h1 class="hero-title">{{ tournament ? tournament.name : 'Cargando torneo...' }}</h1>
+        <h1 class="hero-title" data-cy="tournament-title">{{ tournament ? tournament.name : 'Cargando torneo...' }}</h1>
         <p class="hero-subtitle" v-if="tournament">
           {{ getTournamentTypeText(tournament.tournament_type) }} | 
           {{ tournament.board_type === 'OTB' ? 'Presencial' : 'Online' }} |
@@ -144,28 +144,45 @@
                 <h3>No hay rondas configuradas</h3>
                 <p>El torneo aún no ha sido emparejado o está en preparación.</p>
               </div>
-              
+
               <div v-else class="rounds-list">
-                <div v-for="round in roundsData.rounds.rounds" :key="round.round_id" class="round-card">
+                <div v-for="(round, roundIndex) in roundsData.rounds.rounds" :key="round.round_id" class="round-card" :data-cy="`round_${roundIndex + 1}`">
                   <div class="round-header">
-                    <h3>{{ round.round_name }}</h3>
+                    <h3>{{ "round_00" + (roundIndex + 1) }}</h3>
                     <div class="round-date" v-if="round.start_date">
                       {{ formatDate(round.start_date) }}
                     </div>
                   </div>
                   
                   <div class="games-list">
-                    <div v-for="(game, gameIndex) in round.games" :key="game.game_id" class="game-item">
+                    <div v-for="(game, gameIndex) in round.games" :key="game.game_id" 
+                        class="game-item" 
+                        :data-cy="`game_${roundIndex + 1}_${gameIndex + 1}`">
                       <div class="game-players">
                         <div class="player white">
                           <strong>{{ game.white.name || 'Sin jugador' }}</strong>
                           <span v-if="game.white.rating" class="rating">({{ game.white.rating }})</span>
                         </div>
                         <div class="game-result">
+                          <!-- Select para usuarios normales - visible para no administradores -->
                           <select 
                             v-model="game.result" 
                             class="custom-select"
                             :data-cy="`select-${round.round_id}-${round.games.length - gameIndex}`"
+                          >
+                            <option value="">-- Seleccionar --</option>
+                            <option value="White wins (1-0)">White wins (1-0)</option>
+                            <option value="B">Black wins (0-1)</option>
+                            <option value="D">Draw (1/2-1/2)</option>
+                            <option value="F">Forfeit (F-F)</option>
+                          </select>
+
+                          <!-- Select para administradores - visible solo para administradores -->
+                          <select 
+                            v-if="isAdmin"
+                            v-model="game.result" 
+                            class="custom-select"
+                            :data-cy="`select-admin-${round.round_id}-${round.games.length - gameIndex}`"
                           >
                             <option value="">-- Seleccionar --</option>
                             <option value="White wins (1-0)">White wins (1-0)</option>
@@ -205,9 +222,18 @@
                   </div>
                 </div>
               </div>
-            </div>
+
+              <!-- Agrega un elemento para mensajes de error globales -->
+              <div v-if="globalError" class="error-state" data-cy="error-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3>Ha ocurrido un error</h3>
+                <p>{{ globalError }}</p>
+              </div>
             <!-- Sección de Clasificación -->
-            <!-- Reemplaza la sección de la tabla de clasificación en el HTML -->
             <div class="section-container" data-cy="ranking-section">
               <h2 class="tabs-header" data-cy="standing-accordion-button">Clasificación</h2>
               
@@ -230,7 +256,6 @@
                 <table class="rankings-table">
                   <thead>
                     <tr>
-                      <th>Pos</th>
                       <th>Name</th>
                       <th>Points</th>
                       <th>Black</th>
@@ -238,13 +263,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Asegúrate de que cada celda esté en su propia columna y corresponda al orden esperado por el test -->
                     <tr v-for="(player, index) in rankingsSorted" :key="player.id" :data-cy="`ranking-${index + 1}`">
-                      <td>{{ player.rank }}</td>
-                      <td>{{ player.name }}</td>
-                      <td>{{ player.score }}</td>
-                      <td>{{ player.BT }}</td>
-                      <td>{{ player.WI }}</td>
+                      <td data-cy="name">{{ player.name }}&nbsp;</td>
+                        <td data-cy="points">{{ player.score.toFixed(2) }}&nbsp;</td>
+                        <td data-cy="black">{{ player.BT.toFixed(2) }}&nbsp;</td>
+                        <td data-cy="wins">{{ player.WI.toFixed(2) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -294,6 +317,7 @@
       </div>
     </footer>
   </div>
+</div>
 </template>
 
 <script>
@@ -333,45 +357,105 @@ export default {
     // URL base para solicitudes a la API
     const apiBaseUrl = '/api/v1'
     
-    // Cargar datos del torneo
-    const loadTournament = async () => {
-      isLoading.value = true
-      apiErrors.value = null
-      
-      try {
+    // Añade una nueva variable de estado para errores globales
+    const globalError = ref(null)
+
+    const isAdmin = ref(false)
+    
+    // Función para verificar si el usuario actual es administrador
+    const checkAdminStatus = async (tournamentId) => {
+
+        alert('Verificando estado de administrador...')
+
         const response = await axios.get(`${apiBaseUrl}/tournaments/${tournamentId.value}/`)
         tournament.value = response.data
+
+        alert('Torneo cargado, verificando ID de usuario administrativo...')
+        alert(`ID de torneo: ${tournament.value.id}`)
+        alert(`ID de usuario administrativo: ${tournament.value.administrativeUser}`)
         
-        console.log('Torneo cargado:', tournament.value)
-        
-        // Cargar todos los datos necesarios
-        loadPlayers()
-        loadRankings()
-        loadRounds()
-        
-      } catch (error) {
-        console.error('Error al cargar torneo:', error)
-        apiErrors.value = 'Error al cargar los datos del torneo. Por favor, inténtalo de nuevo más tarde.'
-      } finally {
-        isLoading.value = false
+        if (tournament && tournament.value.administrativeUser) {
+          alert(`ID de usuario administrativo: ${tournament.value.administrativeUser}`)
+          const currentUserId = getCurrentUserId() // Implementar esta función
+          alert(`ID de usuario actual: ${currentUserId}`)
+          isAdmin.value = (currentUserId === tournament.value.administrativeUser)
+          alert(`Current user ID: ${currentUserId}, Admin user ID: ${tournament.value.administrativeUser}`)
+        } else {
+          alert('No se encontró el ID de usuario administrativo en el torneo.')
+          isAdmin.value = false
+        }
+      
+    }
+
+    const getCurrentUserId = () => {
+      
+      const userStr = localStorage.getItem('user')
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr)
+          return user.id
+        } catch (e) {
+          console.error('Error al obtener ID de usuario:', e)
+        }
       }
+      return null
     }
     
-    // Cargar datos de participantes
-    const loadPlayers = async () => {
-      playersLoading.value = true
-      
-      try {
-        const response = await axios.get(`${apiBaseUrl}/get_players/${tournamentId.value}/`)
-        players.value = response.data
-        console.log('Jugadores cargados:', players.value)
-      } catch (error) {
-        console.error('Error al cargar jugadores:', error)
-        apiErrors.value = 'Error al cargar los participantes.'
-      } finally {
-        playersLoading.value = false
+
+const loadTournament = async () => {
+  isLoading.value = true
+  apiErrors.value = null
+  globalError.value = null
+  
+  try {
+    const response = await axios.get(`${apiBaseUrl}/tournaments/${tournamentId.value}/`)
+    tournament.value = response.data
+    
+    console.log('Torneo cargado:', tournament.value)
+    
+    // Cargar todos los datos necesarios
+    await loadPlayers()
+    await loadRankings()
+    await loadRounds()
+    
+  } catch (error) {
+    console.error('Error al cargar torneo:', error)
+    apiErrors.value = 'Error al cargar los datos del torneo. Por favor, inténtalo de nuevo más tarde.'
+    
+    // Comprobar si es un error de "Tournament name already exists"
+    if (error.response && error.response.data) {
+      if (error.response.data.detail && error.response.data.detail.includes('already exists')) {
+        globalError.value = 'Error: Tournament name already exists'
       }
     }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Modifica la función loadPlayers para manejar errores específicos
+const loadPlayers = async () => {
+  playersLoading.value = true
+  
+  try {
+    const response = await axios.get(`${apiBaseUrl}/get_players/${tournamentId.value}/`)
+    players.value = response.data
+    console.log('Jugadores cargados:', players.value)
+  } catch (error) {
+    console.error('Error al cargar jugadores:', error)
+    apiErrors.value = 'Error al cargar los participantes.'
+    
+    // Comprobar si es un error de "can not add players"
+    if (error.response && error.response.data) {
+      if (error.response.data.detail && error.response.data.detail.includes('can not add players')) {
+        globalError.value = 'Error: can not add players to tournament'
+      }
+    }
+  } finally {
+    playersLoading.value = false
+  }
+}
+
     
     // Cargar datos de clasificación
     const loadRankings = async () => {
@@ -380,6 +464,8 @@ export default {
       try {
         const response = await axios.get(`${apiBaseUrl}/get_ranking/${tournamentId.value}/`)
         rankings.value = response.data
+
+       
         console.log('Clasificación cargada:', rankings.value)
       } catch (error) {
         console.error('Error al cargar clasificación:', error)
@@ -434,7 +520,7 @@ export default {
         }
         
         // Enviar resultado a la API
-        const response = await axios.post(`${apiBaseUrl}/admin_update_game/`, gameData)
+        const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
         
         console.log('Resultado enviado correctamente:', response.data)
         
@@ -612,18 +698,28 @@ export default {
     // Ordenar rankings por posición
     const rankingsSorted = computed(() => {
       return Object.values(rankings.value)
-        .sort((a, b) => a.rank - b.rank)
+        .sort((a, b) => a.rank - b.rank).map(player => ({
+          ...player,
+          rank: player.rank,
+          score: parseFloat(player.score.toFixed(2)),
+          BT: parseFloat(player.BT.toFixed(2) || 0),
+          WI: parseFloat(player.WI.toFixed(2) || 0),
+        }))
     })
       
     onMounted(() => {
       loadTournament()
+      checkAdminStatus(tournamentId)
     })
       
     return {
       tournament,
       isLoading,
       apiErrors,
+      isAdmin,
       players,
+      tournamentId,
+      globalError,
       rankings,
       rankingsSorted,
       roundsData,

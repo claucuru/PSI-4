@@ -171,6 +171,7 @@ jrcuesta
       tournament_name,
       headerLIC + playersLIC
     ); //add tournament name, different for each test.
+    cy.wait(5000);
     cy.get("[data-cy=error-message]").should("not.exist");
     cy.create_tournament(
       "LIC", // Lichess
@@ -178,6 +179,8 @@ jrcuesta
       tournament_name,
       headerLIC + playersLIC
     ); //add tournament name, different for each test.
+    // AÑADIDO POR ALEJANDRA Y CLAUDIA PARA QUE LE DE TIEMPO A CARGAR
+    cy.wait(5000);
 
     // cy.get('[data-cy=error-message]').contains('Error: Tournament name already exists');
   });

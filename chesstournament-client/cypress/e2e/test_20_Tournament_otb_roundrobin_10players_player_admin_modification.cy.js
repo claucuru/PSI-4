@@ -97,7 +97,7 @@ jrcuesta, jrcuesta@example.com
     ); //add tournament name, different for each test.
 
     // AÑADIDO POR ALEJANDRA Y CLAUDIA PARA QUE LE DE TIEMPO A CARGAR
-    cy.wait(5000)
+    cy.wait(9000)
     
     // Go to main page and...
     cy.visit("/");
@@ -169,10 +169,13 @@ jrcuesta, jrcuesta@example.com
 
     // login
     cy.visit("/"); // login is lost at this point
+    cy.wait(5000);
     cy.login(Cypress.env("username"), Cypress.env("password"));
     // select tournament
     cy.get("[data-cy=tournament_SR]").click();
     // check extra column
+    // AÑADIDO POR NOSOTRAS
+    cy.wait(5000);
     cy.get("[data-cy=select-admin-1-1]").should("exist");
     // modify reults
     // select input widget and select game result

@@ -224,15 +224,19 @@ def getBlackWins(tournament, results):
                 Scores.BYE_F.value, Scores.BYE_H.value,
                 Scores.BYE_U.value, Scores.BYE_Z.value
             ]:
-                if game.black in results:
-                    results[game.black][BLACKTIMES] += 1
-
                 if game.result == 'W':
                     if game.white in results:
                         results[game.white][WINS] += 1
+                    if game.black in results:
+                        results[game.black][BLACKTIMES] += 1
                 if game.result == 'B':
                     if game.black in results:
                         results[game.black][WINS] += 1
+                    if game.black in results:
+                        results[game.black][BLACKTIMES] += 1
+                if game.result == 'D':
+                    if game.black in results:
+                        results[game.black][BLACKTIMES] += 1
 
     return results
 

@@ -13,7 +13,7 @@
             <div class="create-tournament-form">
                 <h2 class="form-title">Crear Torneo</h2>
                 
-                <div v-if="errorMessage" class="error-message">
+                <div v-if="errorMessage" class="error-message" data-cy="error-message">
                     {{ errorMessage }}
                 </div>
                 <div v-if="successMessage" class="success-message">
@@ -116,12 +116,12 @@
 
                     <div class="form-section">
                         <h3 class="section-title">Jugadores</h3>
-                        <p class="section-description">Lista de nombres de usuario de Lichess (uno por línea)</p>
+                        <p class="section-description">Lista de nombres de usuario (uno por línea). En el caso de OTB incluir el email.</p>
                         <div class="textarea-group">
                             <textarea 
                                 v-model="playersText" 
                                 id="input_9"
-                                placeholder="Ingrese los nombres de usuario de Lichess, uno por línea"
+                                placeholder="El primero debe ser obligatoriamente lichess_username, ej: lichess_username, username2. Si fuese OTB, ej: name  email, username2 email"
                                 rows="5"
                                 data-cy="players-text"
                             ></textarea>
@@ -306,10 +306,11 @@ export default {
                 return false;
             }
             
-            // En el entorno de prueba, asumimos que los usuarios son válidos
-            if (process.env.NODE_ENV === 'test') {
-                return true;
-            }
+            // En el entorno de prueba, NO asumimos que los usuarios son válidos
+            // Quitamos esta verificación para que las pruebas puedan detectar usuarios inválidos
+            // if (process.env.NODE_ENV === 'test') {
+            //     return true;
+            // }
             
             try {
                 // Verificar la existencia de cada usuario en Lichess
@@ -327,7 +328,7 @@ export default {
                 }
                 
                 if (invalidUsers.length > 0) {
-                    this.errorMessage = `Los siguientes usuarios no existen en Lichess: ${invalidUsers.join(', ')}`;
+                    this.errorMessage = `Error: can not add players to tournament. Los siguientes usuarios no existen en Lichess: ${invalidUsers.join(', ')}`;
                     return false;
                 }
                 
@@ -508,21 +509,6 @@ export default {
                     return;
                 }
                 
-                // Validar usuarios según el tipo de tablero
-                if (this.tournament.board_type === 'LIC') {
-                    const usersValid = await this.validateLichessUsers();
-                    if (!usersValid) {
-                        this.isLoading = false;
-                        return;
-                    }
-                } else if (this.tournament.board_type === 'OTB') {
-                    // Para torneos OTB, validar que hay al menos jugadores ingresados
-                    if (this.playersList.length === 0) {
-                        this.errorMessage = 'Debe ingresar al menos un jugador.';
-                        this.isLoading = false;
-                        return;
-                    }
-                }
                 
                 // Preparar datos para enviar a la API
                 const tournamentData = {
@@ -546,6 +532,9 @@ export default {
                     
                     // Asegurarnos de enviar un formato que el backend pueda procesar correctamente
                     tournamentData.players = playersArray.join('\n');
+                    this.playersText = playersArray.join('\n'); // Actualizar el texto de los jugadores
+                    this.validateLichessUsers();
+
                 } else if (this.tournament.board_type === 'OTB') {
                     // Para torneos OTB, preparar en formato CSV con encabezado
                     let playersCSV = "lichess_username\n"; // Agregar el encabezado que espera el backend
