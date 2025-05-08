@@ -588,7 +588,7 @@ export default {
                     // Guardar los datos del torneo en localStorage como respaldo
                     localStorage.setItem('lastCreatedTournament', JSON.stringify(response.data));
 
-                    router.push(`/tournamentdetail2/${tournamentId}`);
+                    router.push(`/tournamentdetail/${tournamentId}`);
                 }
             } catch (error) {
                 // Manejar específicamente errores de autenticación

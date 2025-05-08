@@ -61,10 +61,11 @@
         </div>
         
         <!-- Lista de torneos -->
-        <div v-else class="tournaments-grid">
-          <div 
-            v-for="tournament in tournaments"
+            <div v-else class="tournaments-grid">
+          <router-link
+            v-for="tournament in tournaments" 
             :key="tournament.id" 
+            :to="`/tournamentdetail/${tournament.id}`"
             class="tournament-card"
             :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"
           >
@@ -115,12 +116,10 @@
               </div>
               
               <div class="tournament-footer">
-                <router-link :to="`/tournamentdetail/${tournament.id}`" class="view-details-btn">
-                  Ver detalles
-                </router-link>
+                <span class="view-details-btn"> Ver detalles</span>
               </div>
             </div>
-          </div>
+          </router-link>
         </div>
         
         <!-- Paginación -->

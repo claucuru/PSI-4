@@ -215,7 +215,7 @@
                         
                         <button 
                           class="edit-game-btn"
-                          :data-cy="`button-${isAdmin ? 'admin' : ''}-${round.round_id}-${gameIndex + 1}`" 
+                          :data-cy="`button-${isAdmin ? 'admin-' : ''}${round.round_id}-${gameIndex + 1}`" 
                           @click="submitGameResult(round.round_id, game)"
                         >
                           Enviar resultado
@@ -765,6 +765,35 @@ export default {
 }
 </script>
 <style scoped>
+
+.tournament-details-page {
+  color: #000;
+}
+
+.tournament-description h3,
+.tournament-description p,
+.tabs-header,
+.players-table th,
+.players-table td,
+.rankings-table th,
+.rankings-table td,
+.round-header h3,
+.player strong,
+.game-result,
+.modal-header h3,
+.form-group label {
+  color: #000 !important;
+}
+
+.tournament-status-banner,
+.game-status,
+.rating,
+.round-date,
+.empty-state h3,
+.empty-state p,
+.error-state {
+  
+}
 .tournament-details-page {
   min-height: 100vh;
   min-width: 100vw;
