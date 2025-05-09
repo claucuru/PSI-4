@@ -12,7 +12,7 @@ const RENDER_URL = import.meta.env.VITE_RENDER_URL;
 // Seleccionar URL base según variable de entorno de testing
 axios.defaults.baseURL = import.meta.env.VITE_TESTING === 'true' ? DJANGO_URL : RENDER_URL ;
 
-console.log(`Usando API: ${axios.defaults.baseURL}`);
+alert(`Usando API: ${axios.defaults.baseURL}`);
 
 const app = createApp(App);
 const pinia = createPinia();

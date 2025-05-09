@@ -107,9 +107,9 @@ npm install
 3. Configurar las variables de entorno para el desarrollo:
 
 
-Para usar la URL de Render en lugar de la local:
+Para usar la URL de Render en lugar de la local, debemos acudir al archivo env.developement y modificar VITE_TESTING:
 ```
-export VITE_TESTING=true
+VITE_TESTING=true
 ```
 
 4. Iniciar el servidor de desarrollo:
@@ -118,10 +118,6 @@ export VITE_TESTING=true
 npm run dev
 ```
 
-Alternativamente, puede exportar la variable TESTING directamente:
-```bash
-VITE_TESTING=true npm run dev
-```
 
 El frontend estará disponible en: http://localhost:5173/
 
