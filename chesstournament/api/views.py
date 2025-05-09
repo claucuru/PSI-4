@@ -971,7 +971,7 @@ class AdminUpdateGameAPIView(APIView):
             except Exception as e:
                 return Response(
                     {"result": False, "message": f"Error updating game: {str(e)}"},
-                    status=status.HTTP_500_BAD_GATEWAY
+                    status=status.HTTP_502_BAD_GATEWAY
                 )
             
 class AddRankingAPIView(APIView):
@@ -1085,5 +1085,87 @@ class UpdateGameAPIView(APIView):
         except Exception as e:
             return Response(
                 {"result": False, "message": f"Error updating game: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+from django.shortcuts import get_object_or_404
+
+class ResultGameLichessAPIView(APIView):
+    """
+    API View para obtener y actualizar resultados de juegos de Lichess.
+    
+    Endpoints:
+    - GET: Obtiene el resultado de un juego de Lichess y actualiza la base de datos
+    
+    Parámetros de consulta:
+    - game_id: ID del juego en la base de datos
+    - lichess_id: ID del juego en Lichess
+    """
+    renderer_classes = [JSONRenderer]
+    permission_classes = []
+    
+    def get(self, request):
+        """
+        Obtiene el resultado de un juego de Lichess y actualiza la información en la base de datos.
+        
+        Parameters:
+            request: Request de Django que debe contener los parámetros:
+                - game_id: ID del juego en la base de datos
+                - lichess_id: ID del juego en Lichess
+        
+        Returns:
+            Response: Respuesta HTTP con el resultado del juego actualizado
+        """
+        # Obtener parámetros de la solicitud
+        game_id = request.query_params.get('game_id')
+        lichess_id = request.query_params.get('lichess_id')
+        
+        # Validar parámetros
+        if not game_id or not lichess_id:
+            return Response(
+                {"error": "Se requieren los parámetros 'game_id' y 'lichess_id'"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Obtener el juego de la base de datos
+            game = get_object_or_404(Game, id=game_id)
+            
+            # Verificar que el juego tenga jugadores asignados
+            if not game.white or not game.black:
+                return Response(
+                    {"error": "El juego no tiene ambos jugadores asignados"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Obtener el resultado del juego de Lichess
+            try:
+                result, white_username, black_username = game.get_lichess_game_result(lichess_id)
+                
+                # Actualizar el resultado en la base de datos
+                game.result = result
+                if result != '*':  # Si el resultado es válido, marcar como finalizado
+                    game.finished = True
+                game.save()
+                
+                # Serializar y retornar el juego actualizado
+                serializer = GameSerializer(game)
+                return Response({
+                    "message": "Resultado actualizado correctamente",
+                    "white_username": white_username,
+                    "black_username": black_username,
+                    "result": result,
+                    "game": serializer.data
+                })
+                
+            except Exception as e:
+                return Response(
+                    {"error": f"Error al obtener el resultado de Lichess: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+        except Exception as e:
+            return Response(
+                {"error": f"Error al procesar la solicitud: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

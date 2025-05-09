@@ -150,6 +150,7 @@ jrcuesta
       // get row from games table
       const [white, black, gameID, result, roundN, gameN] = tuple; // Destructure the tuple
 
+
       // select input widget and type game ID
       cy.get(`[data-cy=input-${roundN}-${gameN}]`)
         .scrollIntoView({ offset: { top: -150, left: 0 } }) // Scroll the element into view

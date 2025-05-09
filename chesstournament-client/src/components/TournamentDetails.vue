@@ -166,49 +166,75 @@
                           <span v-if="game.white.rating" class="rating">({{ game.white.rating }})</span>
                         </div>
                         <div class="game-result">
-                          <!-- Select para usuarios normales - visible para no administradores -->
-                          <select 
-                            v-if="!isAdmin"
-                            v-model="game.result" 
-                            class="custom-select"
-                            :data-cy= "`select-${round.round_id}-${round.games.length - gameIndex}`"
-                          >
-                            <option value="">-- Seleccionar --</option>
-                            <option value="White wins (1-0)">White wins (1-0)</option>
-                            <option value="B">Black wins (0-1)</option>
-                            <option value="D">Draw (1/2-1/2)</option>
-                            <option value="F">Forfeit (F-F)</option>
-                          </select>
+                          <!-- Para administradores - visible solo para administradores -->
+                          <div v-if="isAdmin">
+                            <select 
+                              v-model="game.result" 
+                              class="custom-select"
+                              :data-cy="`select-admin-${round.round_id}-${round.games.length - gameIndex}`"
+                            >
+                              <option value="">-- Seleccionar --</option>
+                              <option value="White wins (1-0)">White wins (1-0)</option>
+                              <option value="B">Black wins (0-1)</option>
+                              <option value="D">Draw (1/2-1/2)</option>
+                              <option value="F">Forfeit (F-F)</option>
+                            </select>
 
-                          <!-- Select para administradores - visible solo para administradores -->
-                          <select 
-                            v-if="isAdmin"
-                            v-model="game.result" 
-                            class="custom-select"
-                            :data-cy="`select-admin-${round.round_id}-${round.games.length - gameIndex}`"
-                          >
-                            <option value="">-- Seleccionar --</option>
-                            <option value="White wins (1-0)">White wins (1-0)</option>
-                            <option value="B">Black wins (0-1)</option>
-                            <option value="D">Draw (1/2-1/2)</option>
-                            <option value="F">Forfeit (F-F)</option>
-                          </select>
+
+                            <span
+                                  class="result-display"
+                                  :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
+                                  readonly
+                              > {{  formatGameResult(game.result) }} </span>
+                          </div>
                           
-                          <input 
-                            type="text"
-                            v-model="game.gameId"
-                            class="edit-game-btn"
-                            :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
-                            placeholder="ID de la partida"
-                          />
+                          <!-- Para usuarios normales -->
+                          <div v-else>
+                            <!-- Si es OTB, mostrar el selector -->
+                            <div v-if="tournament.board_type === 'OTB'">
+                            <select 
+                              v-if="tournament.board_type === 'OTB'"
+                              v-model="game.result" 
+                              class="custom-select"
+                              :data-cy="`select-${round.round_id}-${round.games.length - gameIndex}`"
+                            >
+                              <option value="">-- Seleccionar --</option>
+                              <option value="White wins (1-0)">White wins (1-0)</option>
+                              <option value="B">Black wins (0-1)</option>
+                              <option value="D">Draw (1/2-1/2)</option>
+                              <option value="F">Forfeit (F-F)</option>
+                            </select>
 
-                          <span 
-                            class="result-display"
-                            :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
-                          >
-                            {{ formatGameResult(game.result) }}
-                          </span>
+
+                            <span
+                                  v-if="tournament.board_type === 'OTB'"
+                                  class="result-display"
+                                  :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
+                                  readonly
+                              > {{  formatGameResult(game.result) }} </span>
+
+                           </div>
+                            
+                            <!-- Si es Online (Lichess), mostrar input para ID de juego -->
+                            <div v-else class="lichess-game-input">
+                              <input
+                                v-if="tournament.board_type === 'LIC'"
+                                v-model="game.result"
+                                class="custom-select"
+                                :data-cy="`input-${round.round_id}-${round.games.length - gameIndex}`"
+                                placeholder="ID de juego"
+                                :value="formatGameResult(game.result)"
+                              />
+
+                              <span
+                                  v-if="tournament.board_type === 'LIC'"
+                                  class="result-display"
+                                  readonly
+                              > {{  formatGameResult(game.result) }} </span>
+                            </div>
+                          </div>  
                         </div>
+
                         
                         <div class="player black">
                           <strong>{{ game.black.name || 'Sin jugador' }}</strong>
@@ -221,13 +247,34 @@
                           {{ game.finished ? 'Finalizada' : 'Pendiente' }}
                         </div>
                         
-                        <button 
+                        <!-- Botón para usuarios normales con OTB o lichess verificado -->
+                      <button 
+                          v-if="!isAdmin && tournament.board_type === 'LIC'"
                           class="edit-game-btn"
-                          :data-cy="`button-${isAdmin ? 'admin-' : ''}${round.round_id}-${round.games.length - gameIndex}`" 
-                          @click="submitGameResult(round.round_id, game)"
-                        >
+                          :data-cy="`button-${round.round_id}-${round.games.length - gameIndex}`" 
+                          @click="submitGameResultLic(round.round_id, game)"
+                      >
                           Enviar resultado
-                        </button>
+                      </button>
+
+                      <button 
+                          v-if="!isAdmin && tournament.board_type === 'OTB'"
+                          class="edit-game-btn"
+                          :data-cy="`button-${round.round_id}-${round.games.length - gameIndex}`" 
+                          @click="submitGameResultOtb(round.round_id, game)"
+                      >
+                          Enviar resultado
+                      </button>
+                        
+                        <!-- Botón para administradores -->
+                      <button 
+                          v-if="isAdmin"
+                          class="edit-game-btn"
+                          :data-cy="`button-admin-${round.round_id}-${round.games.length - gameIndex}`" 
+                          @click="submitGameResultOtb(round.round_id, game)"
+                      >
+                          Enviar resultado
+                      </button>
                       </div>
                     </div>
                   </div>
@@ -331,6 +378,7 @@
     </footer>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios'
@@ -487,86 +535,198 @@ export default {
         } finally {
             roundsLoading.value = false
         }
-    }
-
-
-// Función para enviar el resultado de una partida
-const submitGameResult = async (roundId, game) => {
-  try {
-    // Si no hay resultado seleccionado, no enviar
-    if (!game.result) {
-      alert('Por favor, selecciona un resultado antes de enviar.')
-      return
-    }
-    
-    let resultCode = game.result
-    if (game.result === 'White wins (1-0)') {
-      resultCode = "W"
-    }
-    
-    // Preparar datos para enviar - asegurarse de que el formato es correcto
-    const gameData = {
-      game_id: game.game_id,
-      result: resultCode, // Ya no convertir, usar directamente lo seleccionado
-      finished: true // Siempre marcar como finalizado al enviar un resultado
-    }
-    
-    console.log('Enviando datos de juego:', gameData)
-    
-    // SOLUCIÓN: Obtener el token de autenticación desde el store
-    const authStore = useAuthStore()
-    const token = authStore.getToken
-    
-    // Preparar headers con el token
-    const headers = {
-      'Authorization': `Token ${token}`,
-      'Content-Type': 'application/json'
-    }
-    
-    if (!isAdmin.value) {
-      // Si no es admin, solicitar correo para verificación
-      const userEmail = window.prompt('Por favor, ingresa tu correo electrónico para confirmar:')
-      if (!userEmail) {
-        return // Si el usuario cancela, no continuar
-      }
-      // Añadir el email a los datos enviados
-      gameData.email = userEmail
-      // Enviar resultado a la API para usuarios normales
-      const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
-      console.log('Resultado enviado correctamente:', response.data)
-    } else {
-      // Enviar resultado a la API para administradores
-      // SOLUCIÓN: Añadir headers con el token en la solicitud
-      const response = await axios.post(
-        `${apiBaseUrl}/admin_update_game/`, 
-        gameData,
-        { headers }
-      )
-      console.log('Resultado enviado correctamente (admin):', response.data)
-    }
-    
-    await loadRankings()
-    // Mensaje de éxito
-    alert(isAdmin.value ? 'Resultado actualizado correctamente (como administrador).' : 'Resultado enviado correctamente.')
-    game.finished = true
-  } catch (error) {
-    console.error('Error al enviar el resultado:', error)
-    // Mostrar mensaje de error con detalles específicos si están disponibles
-    let errorMessage = 'Error al enviar el resultado. Por favor, inténtalo de nuevo.'
-    if (error.response) {
-      console.log('Error response:', error.response)
-      if (error.response.data) {
-        if (error.response.data.message) {
-          errorMessage = `Error: ${error.response.data.message}`
-        } else if (error.response.data.detail) {
-          errorMessage = `Error: ${error.response.data.detail}`
         }
+    // Fixed version of the submitGameResultLic function
+    const submitGameResultLic = async (roundId, game) => {
+
+      alert('entra aqui')
+
+      alert(game.result)
+
+      try {
+
+        alert('entra') 
+
+        alert(`ID DEL JUEGO: ${game.game_id}`)
+      
+        const response = await axios.get(`${apiBaseUrl}/lichess_game_result/`, {
+          params: {
+            game_id: game.game_id,
+            lichess_id: game.result
+          }
+        });
+
+        
+        // Preparar datos para enviar
+        const gameData = {
+          game_id: game.game_id,
+          result: response.data.result,
+          finished: true
+        }
+        
+        alert('Enviando datos de juego:', gameData)
+
+        
+        // Get authentication token from store
+        const authStore = useAuthStore()
+        const token = authStore.getToken
+        
+        // Prepare headers with token
+        const headers = {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+        
+        // Send the result based on user role
+        if (!isAdmin.value) {
+          // For regular users
+          const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
+          alert('Resultado enviado correctamente:', response.data)
+          
+        } else {
+          // For admins
+          const response = await axios.post(
+            `${apiBaseUrl}/admin_update_game/`, 
+            gameData,
+            { headers }
+          )
+          console.log('Resultado enviado correctamente (admin):', response.data)
+        }
+        
+        // Reload rankings after successful submission
+        await loadRankings()
+        game.result = response.data.result
+        
+        // Show success message
+        alert(isAdmin.value ? 'Resultado actualizado correctamente (como administrador).' : 'Resultado enviado correctamente.')
+        
+        // Mark game as finished
+        game.finished = true
+        
+      } catch (error) {
+        alert('Error al enviar el resultado:', error)
+        
+        // Show detailed error message
+        let errorMessage = 'Error al enviar el resultado. Por favor, inténtalo de nuevo.'
+        if (error.response) {
+          console.log('Error response:', error.response)
+          if (error.response.data) {
+            if (error.response.data.message) {
+              errorMessage = `Error: ${error.response.data.message}`
+            } else if (error.response.data.detail) {
+              errorMessage = `Error: ${error.response.data.detail}`
+            }
+          }
+        }
+        alert(errorMessage)
+        globalError.value = errorMessage
       }
     }
-    alert(errorMessage)
-    globalError.value = errorMessage
-  }
-}
+
+    // Function to format game result for display
+    const formatGameResult = (result) => {
+      if (!result) return '';
+      
+      // For Lichess games, just return the ID
+      if (tournament.value && tournament.value.board_type === 'LIC') {
+        return result;
+      }
+      
+      // For OTB games, format the result
+      switch(result) {
+        case 'W':
+          return '1-0';
+        case 'White wins (1-0)':
+          return '1-0';
+        case 'B':
+          return '0-1';
+        case 'D':
+          return '½-½';
+        case 'F':
+          return 'F-F';
+        default:
+          return result;
+      }
+    }
+
+    // Función para enviar el resultado de una partida
+    const submitGameResultOtb = async (roundId, game) => {
+      try {
+        // Si no hay resultado seleccionado, no enviar
+        if (!game.result) {
+          alert('Por favor, selecciona un resultado antes de enviar.')
+          return
+        }
+        
+        let resultCode = game.result
+        if (game.result === 'White wins (1-0)') {
+          resultCode = "W"
+        }
+
+        
+        // Preparar datos para enviar - asegurarse de que el formato es correcto
+        const gameData = {
+          game_id: game.game_id,
+          result: resultCode, // Ya no convertir, usar directamente lo seleccionado
+          finished: true // Siempre marcar como finalizado al enviar un resultado
+        }
+        
+        console.log('Enviando datos de juego:', gameData)
+        
+        // SOLUCIÓN: Obtener el token de autenticación desde el store
+        const authStore = useAuthStore()
+        const token = authStore.getToken
+        
+        // Preparar headers con el token
+        const headers = {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+        
+        if (!isAdmin.value) {
+          // Si no es admin, solicitar correo para verificación
+          const userEmail = window.prompt('Por favor, ingresa tu correo electrónico para confirmar:')
+          if (!userEmail) {
+            return // Si el usuario cancela, no continuar
+          }
+          // Añadir el email a los datos enviados
+          gameData.email = userEmail
+          // Enviar resultado a la API para usuarios normales
+          const response = await axios.post(`${apiBaseUrl}/update_game/`, gameData)
+          console.log('Resultado enviado correctamente:', response.data)
+        } else {
+          // Enviar resultado a la API para administradores
+          // SOLUCIÓN: Añadir headers con el token en la solicitud
+          const response = await axios.post(
+            `${apiBaseUrl}/admin_update_game/`, 
+            gameData,
+            { headers }
+          )
+          console.log('Resultado enviado correctamente (admin):', response.data)
+        }
+        
+        await loadRankings()
+        // Mensaje de éxito
+        alert(isAdmin.value ? 'Resultado actualizado correctamente (como administrador).' : 'Resultado enviado correctamente.')
+        game.finished = true
+      } catch (error) {
+        console.error('Error al enviar el resultado:', error)
+        // Mostrar mensaje de error con detalles específicos si están disponibles
+        let errorMessage = 'Error al enviar el resultado. Por favor, inténtalo de nuevo.'
+        if (error.response) {
+          console.log('Error response:', error.response)
+          if (error.response.data) {
+            if (error.response.data.message) {
+              errorMessage = `Error: ${error.response.data.message}`
+            } else if (error.response.data.detail) {
+              errorMessage = `Error: ${error.response.data.detail}`
+            }
+          }
+        }
+        alert(errorMessage)
+        globalError.value = errorMessage
+      }
+    }
 
     // Guardar los cambios de la partida
     const saveGameChanges = async () => {
@@ -705,17 +865,7 @@ const submitGameResult = async (roundId, game) => {
       }
     }
       
-    // Formatear el resultado de la partida para mostrar
-    const formatGameResult = (result) => {
-      const resultMap = {
-        'White wins (1-0)': '1-0',
-        'B': '0-1',
-        'D': '½-½',
-        'F': 'F-F' // Forfeit
-      }
-      
-      return resultMap[result] || '-'
-    }
+   
       
     // Obtener la clase CSS según el resultado
     const getGameResultClass = (result) => {
@@ -769,7 +919,8 @@ const submitGameResult = async (roundId, game) => {
       getPlayerRating,
       formatGameResult,
       formatDate,
-      submitGameResult,
+      submitGameResultLic,
+      submitGameResultOtb,
       openEditGameModal,
       saveGameChanges,
       getGameResultClass
