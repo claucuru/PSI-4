@@ -719,7 +719,6 @@ export default {
           `/get_round_results/${tournamentId.value}/`
         );
         roundsData.value = response.data;
-        alert("Rondas cargadas:", roundsData.value);
       } catch (error) {
         console.error("Error al cargar rondas:", error);
         apiErrors.value = "Error al cargar las rondas y partidas.";
