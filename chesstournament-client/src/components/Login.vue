@@ -149,13 +149,17 @@ export default {
         error.value = "";
         isLoading.value = true;
 
-        await authStore.login(username.value, password.value);
-
-        // Redirigir al usuario a la página principal después del inicio de sesión exitoso
-        router.push({ name: "home" });
+        const loginSuccess = await authStore.login(username.value, password.value);
+        
+        // Solo redirigir si el login fue exitoso
+        if (loginSuccess) {
+          router.push({ name: "home" });
+        } else {
+          // Si login devuelve false, establecer el mensaje de error
+          error.value = "Error: Invalid username or password";
+        }
       } catch (err) {
         error.value =
-          err.response?.data?.non_field_errors?.[0] ||
           "Error: Invalid username or password";
         console.error("Error de inicio de sesión:", err);
       } finally {
