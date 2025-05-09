@@ -68,7 +68,7 @@ eaffelix, eaffelix@example.com
 jrcuesta, jrcuesta@example.com
 `;
 
-/*
+  /*
 2
 typename, email 
 ertopo, ertopo@example.com 
@@ -97,16 +97,15 @@ jrcuesta, jrcuesta@example.com
     ); //add tournament name, different for each test.
 
     // AÑADIDO POR ALEJANDRA Y CLAUDIA PARA QUE LE DE TIEMPO A CARGAR
-    cy.wait(9000)
-    
+    cy.wait(9000);
+
     // Go to main page and...
     cy.visit("/");
 
     // select tournament
-//    cy.get("[data-cy=" + tournament_name + "]").click();
+    //    cy.get("[data-cy=" + tournament_name + "]").click();
 
     cy.get("[data-cy=" + tournament_name + "]").click();
-
 
     // Now we are in the games page
     games.forEach((tuple) => {

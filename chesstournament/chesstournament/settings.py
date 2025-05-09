@@ -129,26 +129,27 @@ DATABASES = {
 print("TESTING environment variable:", "TESTING" in os.environ,
       file=sys.stderr)
 
-#if "TESTING" in os.environ:
-#    db_url = os.getenv("POSTGRESQL_URL")
-#    print(f"Using POSTGRESQL_URL: {db_url}", file=sys.stderr)
-#    db_from_env = dj_database_url.config(
-#        default=db_url, conn_max_age=500
-#    )
-#else:
-#    db_url = os.getenv("NEON_URL")
-#    print(f"Using NEON_URL: {db_url}", file=sys.stderr)
-#    db_from_env = dj_database_url.config(
-#        default=db_url, conn_max_age=500
-#    )
+if "TESTING" in os.environ:
+    db_url = os.getenv("POSTGRESQL_URL")
+    print(f"Using POSTGRESQL_URL: {db_url}", file=sys.stderr)
+    db_from_env = dj_database_url.config(
+        default=db_url, conn_max_age=500
+    )
+else:
+    db_url = os.getenv("NEON_URL")
+    print(f"Using NEON_URL: {db_url}", file=sys.stderr)
+    db_from_env = dj_database_url.config(
+        default=db_url, conn_max_age=500
+    )
 
-
+"""
 db_url = os.getenv("POSTGRESQL_URL")
 print(f"Using POSTGRESQL_URL: {db_url}", file=sys.stderr)
 db_from_env = dj_database_url.config(
     default=db_url, conn_max_age=500
 )
 print("Database configuration being used:", db_from_env, file=sys.stderr)
+"""
 
 DATABASES["default"].update(db_from_env)
 

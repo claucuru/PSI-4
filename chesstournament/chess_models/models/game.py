@@ -87,11 +87,11 @@ class Game(models.Model):
         # Determinamos el resultado según el ganador o si fue un empate
         winner = data.get('winner')
         if winner == 'white':
-            result = 'w'  # Cambiado de Scores.WHITE a 'w'
+            result = 'W'  # Cambiado de Scores.WHITE a 'w'
         elif winner == 'black':
-            result = 'b'  # Cambiado de Scores.BLACK a 'b'
+            result = 'B'  # Cambiado de Scores.BLACK a 'b'
         elif data.get('status') == 'draw' or data.get('status') == 'stalemate':
-            result = '='  # Cambiado de Scores.DRAW a 'd'
+            result = 'D'  # Cambiado de Scores.DRAW a 'd'
         else:
             result = '*'  # Cambiado de Scores.NOAVAILABLE a '*'
 

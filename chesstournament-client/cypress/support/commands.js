@@ -306,8 +306,8 @@ Cypress.Commands.add(
 // create user with username and password
 // using django/python
 Cypress.Commands.add("add_user", (username, password) => {
-  const python = Cypress.env("python").replace(/\\/g, '');
-  const manage = Cypress.env("manage").replace(/\\/g, '');
+  const python = Cypress.env("python").replace(/\\/g, "");
+  const manage = Cypress.env("manage").replace(/\\/g, "");
 
   const script = `
 import os
@@ -324,33 +324,33 @@ user.save()
 print("✔ Usuario creado")  # Para debug
 `;
 
-//   var command =
-//     "# create user\n" +
-//     "export _PYTHON=" +
-//     python +
-//     "\n" +
-//     "export _MANAGE=" +
-//     manage +
-//     "\n" +
-//     "cat <<EOF | ${_PYTHON} ${_MANAGE} shell\n" +
-//     "from django.contrib.auth import get_user_model\n" +
-//     "User = get_user_model()\n" +
-//     "user, created = User.objects.get_or_create(" +
-//     "username='" +
-//     username +
-//     "');" +
-//     "user.set_password('" +
-//     password +
-//     "');" +
-//     "user.email = '" +
-//     username +
-//     "@gmail.com';" +
-//     "user.save()\n" +
-//     "EOF\n";
+  //   var command =
+  //     "# create user\n" +
+  //     "export _PYTHON=" +
+  //     python +
+  //     "\n" +
+  //     "export _MANAGE=" +
+  //     manage +
+  //     "\n" +
+  //     "cat <<EOF | ${_PYTHON} ${_MANAGE} shell\n" +
+  //     "from django.contrib.auth import get_user_model\n" +
+  //     "User = get_user_model()\n" +
+  //     "user, created = User.objects.get_or_create(" +
+  //     "username='" +
+  //     username +
+  //     "');" +
+  //     "user.set_password('" +
+  //     password +
+  //     "');" +
+  //     "user.email = '" +
+  //     username +
+  //     "@gmail.com';" +
+  //     "user.save()\n" +
+  //     "EOF\n";
 
-    const command = `echo "${script}" | "${python}" "${manage}" shell`;
+  const command = `echo "${script}" | "${python}" "${manage}" shell`;
   // cy.log("COMMAND: " + command)
-    cy.exec(command, { failOnNonZeroExit: false });
+  cy.exec(command, { failOnNonZeroExit: false });
 });
 
 // create user with username and password

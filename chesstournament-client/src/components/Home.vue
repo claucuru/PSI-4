@@ -1,11 +1,39 @@
 <template>
   <div class="home-page">
     <HeaderComponent />
-    
+
     <div class="hero-section">
       <div class="hero-content">
         <h1 class="hero-title">Bienvenid@ a TournamentMaster</h1>
-        <p class="hero-subtitle">La plataforma líder para gestión y seguimiento de torneos de ajedrez.</p>
+        <p class="hero-subtitle">
+          La plataforma líder para gestión y seguimiento de torneos de ajedrez.
+        </p>
+        <div v-if="isAdmin">
+          <div data-cy="admin-log" class="admin-welcome-message">
+            Hello, you are logged in as an administrator
+          </div>
+          <router-link
+            to="/createtournament"
+            class="create-tournament-btn"
+            data-cy="create-Tournament-button"
+          >
+            Crea un torneo
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </router-link>
+        </div>
       </div>
     </div>
 
@@ -13,7 +41,7 @@
       <div class="container">
         <div class="tournaments-header">
           <h2 class="section-title">Torneos disponibles</h2>
-          
+
           <div class="search-bar">
             <input
               type="text"
@@ -22,19 +50,43 @@
               @keyup.enter="handleSearch"
               class="search-input"
               data-cy="input-search"
+            />
+            <button
+              class="search-button"
+              @click="handleSearch"
+              data-cy="submit-search"
             >
-            <button class="search-button" @click="handleSearch" data-cy="submit-search">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </button>
           </div>
         </div>
-      
+
         <!-- Estado de error -->
         <div v-if="apiErrors" class="error-state">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -42,16 +94,26 @@
           <h3>Ha ocurrido un error</h3>
           <p>{{ apiErrors }}</p>
         </div>
-        
+
         <!-- Estado de carga -->
         <div v-else-if="isLoading" class="loading-state">
           <div class="spinner"></div>
           <p>Cargando torneos...</p>
         </div>
-        
+
         <!-- Estado vacío -->
         <div v-else-if="tournaments.length === 0" class="empty-state">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -59,22 +121,28 @@
           <h3>No se encontraron torneos</h3>
           <p>Intenta con otros filtros de búsqueda o vuelve más tarde.</p>
         </div>
-        
+
         <!-- Lista de torneos -->
-            <div v-else class="tournaments-grid">
+        <!-- :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"-->
+        <div v-else class="tournaments-grid">
           <router-link
-            v-for="tournament in tournaments" 
-            :key="tournament.id" 
+            v-for="tournament in tournaments"
+            :key="tournament.id"
             :to="`/tournamentdetail/${tournament.id}`"
             class="tournament-card"
-            :data-cy=" isSearching ? 'search-' + tournament.name : tournament.name"
+            :data-cy="
+              isSearching ? 'search-' + tournament.name : tournament.name
+            "
           >
             <div class="tournament-image">
-              <div class="tournament-status" :class="getTournamentStatusClass(tournament)">
+              <div
+                class="tournament-status"
+                :class="getTournamentStatusClass(tournament)"
+              >
                 {{ getTournamentStatusText(tournament) }}
               </div>
             </div>
-            
+
             <div class="tournament-content">
               <div class="tournament-sport">
                 {{ getTournamentTypeText(tournament.tournament_type) }}
@@ -82,64 +150,139 @@
               <h3 class="tournament-title">{{ tournament.name }}</h3>
               <div class="tournament-info">
                 <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
-                  <span>{{ formatDate(tournament.start_date) }} - {{ tournament.end_date ? formatDate(tournament.end_date) : 'En curso' }}</span>
+                  <span
+                    >{{ formatDate(tournament.start_date) }} -
+                    {{
+                      tournament.end_date
+                        ? formatDate(tournament.end_date)
+                        : "En curso"
+                    }}</span
+                  >
                 </div>
                 <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                  <span>{{ tournament.players ? tournament.players.length : 0 }} participantes</span>
+                  <span
+                    >{{
+                      tournament.players ? tournament.players.length : 0
+                    }}
+                    participantes</span
+                  >
                 </div>
                 <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+                    ></path>
                     <circle cx="12" cy="10" r="3"></circle>
                   </svg>
-                  <span>{{ tournament.board_type === 'OTB' ? 'Presencial' : 'Online' }}</span>
+                  <span>{{
+                    tournament.board_type === "OTB" ? "Presencial" : "Online"
+                  }}</span>
                 </div>
                 <div class="info-item">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
-                  <span>{{ tournament.timeControl || 'Tiempo no especificado' }}</span>
+                  <span>{{
+                    tournament.timeControl || "Tiempo no especificado"
+                  }}</span>
                 </div>
               </div>
-              
+
               <div class="tournament-footer">
                 <span class="view-details-btn"> Ver detalles</span>
               </div>
             </div>
           </router-link>
         </div>
-        
+
         <!-- Paginación -->
         <div class="pagination" v-if="totalPages > 1 && !isSearching">
-          <button 
-            class="pagination-btn" 
+          <button
+            class="pagination-btn"
             :disabled="currentPage === 1"
             @click="goToPage(currentPage - 1)"
             data-cy="previous-button"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
-          
+
           <div class="pagination-pages">
             <template v-for="page in displayedPages" :key="page">
-              <button 
-                v-if="page !== '...'" 
-                class="page-number" 
+              <button
+                v-if="page !== '...'"
+                class="page-number"
                 :class="{ active: page === currentPage }"
                 @click="goToPage(page)"
                 :data-cy="`page-${page}`"
@@ -149,258 +292,302 @@
               <span v-else class="page-ellipsis">...</span>
             </template>
           </div>
-          
-          <button 
+
+          <button
             class="pagination-btn"
             :disabled="currentPage === totalPages"
             @click="goToPage(currentPage + 1)"
             data-cy="next-button"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
         </div>
       </div>
     </div>
-    <!-- Footer -->
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-logo">
-        <h3>TournamentMaster</h3>
-        <p>La plataforma líder para gestión de torneos de ajedrez.</p>
-      </div>
-      
-      <div class="footer-authors">
-        <h4>Desarrollado por:</h4>
-        <div class="authors-list">
-          <div class="author">
-            <div class="author-avatar">
-              <!-- Iniciales o ícono -->
-              <span>AP</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <h3>TournamentMaster</h3>
+          <p>La plataforma líder para gestión de torneos de ajedrez.</p>
+        </div>
+
+        <div class="footer-authors">
+          <h4>Desarrollado por:</h4>
+          <div class="authors-list">
+            <div class="author">
+              <div class="author-avatar">
+                <!-- Iniciales o ícono -->
+                <span>AP</span>
+              </div>
+              <div class="author-info">
+                <span class="author-name">Alejandra Palma</span>
+              </div>
             </div>
-            <div class="author-info">
-              <span class="author-name">Alejandra Palma</span>
-            </div>
-          </div>
-          
-          <div class="author">
-            <div class="author-avatar">
-              <span>CC</span>
-            </div>
-            <div class="author-info">
-              <span class="author-name">Claudia Cuevas</span>
+
+            <div class="author">
+              <div class="author-avatar">
+                <span>CC</span>
+              </div>
+              <div class="author-info">
+                <span class="author-name">Claudia Cuevas</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="footer-copyright">
-        <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
+
+        <div class="footer-copyright">
+          <p>&copy; 2025 TournamentMaster. Todos los derechos reservados.</p>
+        </div>
       </div>
     </div>
-  </div>
-</footer>
-  </div>
+  </footer>
 </template>
 
 <script>
-import axios from 'axios'
-import { computed, onMounted, ref } from 'vue'
-import HeaderComponent from './Header.vue'
+import axios from "axios";
+import { computed, onMounted, ref } from "vue";
+import HeaderComponent from "./Header.vue";
+import { useAuthStore } from "../stores/auth";
 
 export default {
-  name: 'HomeView',
+  name: "HomeView",
   components: {
-    HeaderComponent
+    HeaderComponent,
   },
   setup() {
-    const tournaments = ref([])
-    const isLoading = ref(true)
-    const searchQuery = ref('')
-    const currentPage = ref(1)
-    const totalItems = ref(0)
-    const itemsPerPage = 5
-    const apiErrors = ref(null)
-    const isSearching = ref(false)
-    
-    // Configurar la URL base para las solicitudes a la API
-    const apiBaseUrl = '/api/v1'
-    
-    const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage))
-    
+    const tournaments = ref([]);
+    const isLoading = ref(true);
+    const searchQuery = ref("");
+    const currentPage = ref(1);
+    const totalItems = ref(0);
+    const itemsPerPage = 5;
+    const apiErrors = ref(null);
+    const isSearching = ref(false);
+
+    const isAdmin = ref(false);
+
+    // Función para verificar si el usuario actual es administrador
+    const checkAdminStatus = async () => {
+      try {
+        isAdmin.value = false;
+
+        // Verificar si el usuario está autenticado
+        if (!authStore.isAuthenticated) {
+          console.log("Usuario no autenticado");
+          return false;
+        }
+
+        // Obtener información del usuario actual
+        const currentUser = authStore.getUser;
+        if (!currentUser || !currentUser.id) {
+          console.log("No se pudo obtener información del usuario");
+          return false;
+        }
+
+        isAdmin.value = true;
+      } catch (error) {
+        console.error("Error al verificar estado de administrador:", error);
+        isAdmin.value = false;
+        return false;
+      }
+    };
+
+    const authStore = useAuthStore();
+
+    const totalPages = computed(() =>
+      Math.ceil(totalItems.value / itemsPerPage)
+    );
+
     // Cálculo de los números de página a mostrar
     const displayedPages = computed(() => {
-      const pages = []
-      const maxVisiblePages = 5
-      
+      const pages = [];
+      const maxVisiblePages = 5;
+
       if (totalPages.value <= maxVisiblePages) {
         for (let i = 1; i <= totalPages.value; i++) {
-          pages.push(i)
+          pages.push(i);
         }
       } else {
-        pages.push(1)
-        
-        let startPage = Math.max(2, currentPage.value - 1)
-        let endPage = Math.min(totalPages.value - 1, startPage + 2)
-        
+        pages.push(1);
+
+        let startPage = Math.max(2, currentPage.value - 1);
+        let endPage = Math.min(totalPages.value - 1, startPage + 2);
+
         if (startPage > 2) {
-          pages.push('...')
+          pages.push("...");
         }
-        
+
         for (let i = startPage; i <= endPage; i++) {
-          pages.push(i)
+          pages.push(i);
         }
-        
+
         if (endPage < totalPages.value - 1) {
-          pages.push('...')
+          pages.push("...");
         }
-        
-        pages.push(totalPages.value)
+
+        pages.push(totalPages.value);
       }
-      
-      return pages
-    })
-    
+
+      return pages;
+    });
+
     // Determinar el estado del torneo
     const getTournamentStatusClass = (tournament) => {
-      if (!tournament.start_date) return 'proximo'
-      
-      const now = new Date()
-      const startDate = new Date(tournament.start_date)
-      
-      if (startDate > now) return 'proximo'
-      if (!tournament.end_date) return 'en_curso'
-      
-      const endDate = new Date(tournament.end_date)
-      if (endDate < now) return 'finalizado'
-      
-      return 'en_curso'
-    }
-    
+      if (!tournament.start_date) return "proximo";
+
+      const now = new Date();
+      const startDate = new Date(tournament.start_date);
+
+      if (startDate > now) return "proximo";
+      if (!tournament.end_date) return "en_curso";
+
+      const endDate = new Date(tournament.end_date);
+      if (endDate < now) return "finalizado";
+
+      return "en_curso";
+    };
+
     // Obtener texto de estado para mostrar
     const getTournamentStatusText = (tournament) => {
-      const status = getTournamentStatusClass(tournament)
-      
+      const status = getTournamentStatusClass(tournament);
+
       const statusMap = {
-        'proximo': 'Próximo',
-        'en_curso': 'En curso',
-        'finalizado': 'Finalizado',
-        'abierto': 'Inscripción abierta'
-      }
-      
-      return statusMap[status] || 'Estado desconocido'
-    }
-    
+        proximo: "Próximo",
+        en_curso: "En curso",
+        finalizado: "Finalizado",
+        abierto: "Inscripción abierta",
+      };
+
+      return statusMap[status] || "Estado desconocido";
+    };
+
     // Obtener el texto del tipo de torneo
     const getTournamentTypeText = (type) => {
       const typeMap = {
-        'SW': 'Suizo',
-        'RR': 'Round Robin',
-        'KO': 'Eliminación',
-        'TE': 'Por equipos',
-        'SR': 'Single Round Robin' // Añadido este tipo que aparece en las pruebas
-      }
-      
-      return typeMap[type] || 'Ajedrez'
-    }
-    
+        SW: "Suizo",
+        RR: "Round Robin",
+        KO: "Eliminación",
+        TE: "Por equipos",
+        SR: "Single Round Robin", // Añadido este tipo que aparece en las pruebas
+      };
+
+      return typeMap[type] || "Ajedrez";
+    };
     // Cargar torneos desde la API
     const loadTournaments = async () => {
-      isLoading.value = true
-      apiErrors.value = null
-      isSearching.value = searchQuery.value.trim() !== ''
-      
+      isLoading.value = true;
+      apiErrors.value = null;
+      isSearching.value = searchQuery.value.trim() !== "";
+
       try {
         // Si hay una búsqueda activa, usar el endpoint de búsqueda
         if (isSearching.value) {
           const response = await axios.post(
-            `${apiBaseUrl}/searchTournaments/`,
+            `/searchTournaments/`,
             { search_string: searchQuery.value.trim() },
-            { headers: { 'Content-Type': 'application/json' } }
-          )
-          
-          console.log('Búsqueda respuesta:', response.data)
-          
+            { headers: { "Content-Type": "application/json" } }
+          );
+
+          console.log("Búsqueda respuesta:", response.data);
+
           // Procesar los resultados de búsqueda
-          tournaments.value = Array.isArray(response.data) ? response.data : []
-          totalItems.value = tournaments.value.length
+          tournaments.value = Array.isArray(response.data) ? response.data : [];
+          totalItems.value = tournaments.value.length;
         } else {
           // Si no hay búsqueda, cargar la lista de torneos
           const params = {
             page: currentPage.value,
-            page_size: itemsPerPage
-          }
-          
-          const response = await axios.get(`${apiBaseUrl}/tournaments/`, { params })
-          
-          console.log('Torneos respuesta:', response.data)
-          
+            page_size: itemsPerPage,
+          };
+
+          const response = await axios.get(`/tournaments/`, { params });
+
+          console.log("Torneos respuesta:", response.data);
+
           // Procesar la respuesta paginada de la API
           if (response.data && Array.isArray(response.data.results)) {
-            tournaments.value = response.data.results
-            totalItems.value = response.data.count || response.data.results.length
+            tournaments.value = response.data.results;
+            totalItems.value =
+              response.data.count || response.data.results.length;
           } else if (Array.isArray(response.data)) {
-            tournaments.value = response.data
-            totalItems.value = response.data.length
+            tournaments.value = response.data;
+            totalItems.value = response.data.length;
           } else {
-            console.error('Formato de respuesta inesperado:', response.data)
-            tournaments.value = []
-            totalItems.value = 0
+            console.error("Formato de respuesta inesperado:", response.data);
+            tournaments.value = [];
+            totalItems.value = 0;
           }
         }
-        
-        console.log('Torneos procesados:', tournaments.value)
-        
+
+        console.log("Torneos procesados:", tournaments.value);
       } catch (error) {
-        console.error('Error al cargar torneos:', error)
-        
-        if (error.message && error.message.includes('CORS')) {
-          apiErrors.value = 'Error de acceso al servidor: CORS no configurado correctamente. Contacta al administrador.'
+        console.error("Error al cargar torneos:", error);
+
+        if (error.message && error.message.includes("CORS")) {
+          apiErrors.value =
+            "Error de acceso al servidor: CORS no configurado correctamente. Contacta al administrador.";
         } else {
-          apiErrors.value = 'Error al cargar los torneos. Por favor, inténtalo de nuevo más tarde.'
+          apiErrors.value =
+            "Error al cargar los torneos. Por favor, inténtalo de nuevo más tarde.";
         }
-        
-        tournaments.value = []
-        totalItems.value = 0
+
+        tournaments.value = [];
+        totalItems.value = 0;
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
-    
+    };
+
     // Formateador de fechas
     const formatDate = (dateString) => {
-      if (!dateString) return 'Fecha no disponible'
-      
+      if (!dateString) return "Fecha no disponible";
+
       try {
-        const options = { day: '2-digit', month: '2-digit', year: 'numeric' }
-        return new Date(dateString).toLocaleDateString('es-ES', options)
+        const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+        return new Date(dateString).toLocaleDateString("es-ES", options);
       } catch (error) {
-        console.error('Error al formatear fecha:', dateString, error)
-        return 'Fecha inválida'
+        console.error("Error al formatear fecha:", dateString, error);
+        return "Fecha inválida";
       }
-    }
-    
+    };
+
     // Manejar búsqueda
     const handleSearch = () => {
-      isSearching.value = true
-      currentPage.value = 1
-      loadTournaments()
-    }
-    
+      currentPage.value = 1;
+      loadTournaments();
+    };
+
     // Cambiar de página
     const goToPage = (page) => {
-      currentPage.value = page
-      loadTournaments()
-    }
-    
+      currentPage.value = page;
+      loadTournaments();
+    };
+
     onMounted(() => {
-      loadTournaments()
-    })
-    
+      checkAdminStatus();
+      loadTournaments();
+    });
+
     return {
       tournaments,
+      isAdmin,
+      checkAdminStatus,
       isLoading,
       searchQuery,
       currentPage,
@@ -413,10 +600,10 @@ export default {
       getTournamentStatusText,
       getTournamentTypeText,
       handleSearch,
-      goToPage
-    }
-  }
-}
+      goToPage,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -428,9 +615,77 @@ export default {
   flex-direction: column;
 }
 
+.create-tournament-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid white;
+  border-radius: 50px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 14px 32px;
+  margin-top: 30px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.create-tournament-btn svg {
+  margin-left: 10px;
+  transition: transform 0.3s ease;
+}
+
+.create-tournament-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+.create-tournament-btn:hover svg {
+  transform: scale(1.1);
+}
+
+/* Efecto para cuando el botón está siendo presionado */
+.create-tournament-btn:active {
+  transform: translateY(0);
+}
+
+/* Admin welcome message */
+.admin-welcome-message {
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 20px auto;
+  padding: 12px 20px;
+  text-align: center;
+  max-width: 80%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .create-tournament-btn {
+    font-size: 16px;
+    padding: 12px 24px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .create-tournament-btn {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+}
+
 .hero-section {
   background: linear-gradient(135deg, #a96fc0 0%, #ba8cce 100%);
-  padding: 80px 20px;
+  padding: 20px 10px;
   color: white;
   text-align: center;
   flex-shrink: 0;
@@ -487,38 +742,31 @@ export default {
   display: flex;
   max-width: 500px;
   width: 100%;
-  border-radius: 8px;
-  overflow: hidden; /* Para que los bordes redondeados funcionen correctamente */
 }
 
 .search-input {
   border: 2px solid #e6d5f2;
-  border-right: none; /* Elimina el borde derecho para evitar doble borde */
   border-radius: 8px 0 0 8px;
   color: #333;
   flex: 1;
   font-size: 16px;
   padding: 12px 16px;
   transition: border-color 0.3s;
-  margin: 0; /* Elimina cualquier margen que pueda causar espacios */
-}
-
-.search-button {
-  background-color: #9b59b6;
-  border: 2px solid #9b59b6; /* Añade un borde del mismo color para alinearlo */
-  border-radius: 0 8px 8px 0;
-  color: white;
-  cursor: pointer;
-  padding: 0 20px;
-  transition: background-color 0.3s;
-  display: flex;         /* Asegura que el ícono esté centrado */
-  align-items: center;   /* Centra verticalmente */
-  justify-content: center; /* Centra horizontalmente */
 }
 
 .search-input:focus {
   border-color: #bb8fce;
   outline: none;
+}
+
+.search-button {
+  background-color: #9b59b6;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  color: white;
+  cursor: pointer;
+  padding: 0 20px;
+  transition: background-color 0.3s;
 }
 
 .search-button:hover {
@@ -545,8 +793,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -787,7 +1039,7 @@ export default {
   .container {
     max-width: 1000px;
   }
-  
+
   .tournaments-grid {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
@@ -797,16 +1049,16 @@ export default {
   .hero-title {
     font-size: 36px;
   }
-  
+
   .hero-subtitle {
     font-size: 18px;
   }
-  
+
   .tournaments-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .search-bar {
     max-width: 100%;
   }
@@ -816,12 +1068,12 @@ export default {
   .hero-section {
     padding: 60px 20px;
   }
-  
+
   .tournaments-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
   }
-  
+
   .section-title {
     font-size: 24px;
   }
@@ -831,19 +1083,19 @@ export default {
   .hero-title {
     font-size: 28px;
   }
-  
+
   .hero-subtitle {
     font-size: 16px;
   }
-  
+
   .tournaments-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .pagination-pages {
     margin: 0 8px;
   }
-  
+
   .page-number {
     margin: 0 2px;
     padding: 6px 8px;
@@ -929,7 +1181,7 @@ export default {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .authors-list {
     justify-content: center;
   }

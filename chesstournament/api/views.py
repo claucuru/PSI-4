@@ -666,18 +666,11 @@ class UpdateLichessGameAPIView(APIView):
                 result_data = game.get_lichess_game_result(lichess_game_id)
                 result, white_username, black_username = result_data
 
-                game_data = {
-                    'game_id': game.id,
-                    'lichess_game_id': lichess_game_id,
-                    'result': result,
-                    'white_username': white_username,
-                    'black_username': black_username,
-                }
+                if result == 'D':
+                    result = '='
 
-                game_serializer = GameSerializer(game, data=game_data,
-                                                 partial=True)
-                game_serializer.is_valid(raise_exception=True)
-                game_serializer.save()
+                game.result = result.lower()
+                game.save()
 
                 return Response(
                     {
@@ -866,6 +859,14 @@ class AdminUpdateGameAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # Verificar que el usuario autenticado es el que creó el torneo
+        if game.round.tournament.administrativeUser != request.user:
+                return Response(
+                    {"result": False, "message": "Only the user that create "
+                                "the tournament can update it"},
+                            status=status.HTTP_403_FORBIDDEN
+                )
+        
         # Determinar el tipo de actualización según los parámetros recibidos
         if 'lichess_game_id' in request.data:
             # Si tiene lichess_game_id, procesar como actualización de Lichess
@@ -882,6 +883,7 @@ class AdminUpdateGameAPIView(APIView):
                     result = white_username = black_username = None
                     result_data = game.get_lichess_game_result(lichess_game_id)
                     result, white_username, black_username = result_data
+
 
                     game_data = {
                         'game_id': game.id,
@@ -971,7 +973,7 @@ class AdminUpdateGameAPIView(APIView):
             except Exception as e:
                 return Response(
                     {"result": False, "message": f"Error updating game: {str(e)}"},
-                    status=status.HTTP_502_BAD_GATEWAY
+                    status=status.HTTP_400_BAD_REQUEST
                 )
             
 class AddRankingAPIView(APIView):

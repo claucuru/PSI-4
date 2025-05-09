@@ -4,80 +4,119 @@
       <div class="login-left">
         <div class="chess-pattern"></div>
         <div class="login-content">
-          <img 
+          <img
             src="../components/icons/icono.png"
-            class ="chess-piece-icon"
-            alt="Chess Piece" 
+            class="chess-piece-icon"
+            alt="Chess Piece"
             data-cy="login-chess-icon"
           />
           <h1 class="login-brand">TournamentMaster</h1>
-          <p class="login-tagline">La plataforma líder para gestión de torneos de ajedrez.</p>
+          <p class="login-tagline">
+            La plataforma líder para gestión de torneos de ajedrez.
+          </p>
         </div>
       </div>
       <div class="login-right">
         <div class="login-card">
           <h1 class="login-title">Iniciar sesión</h1>
           <p class="login-subtitle">Acceso a administración de torneos</p>
-          
+
           <div v-if="error" class="error-message" data-cy="error-message">
             {{ error }}
           </div>
-          
+
           <form @submit.prevent="handleLogin" class="login-form">
             <div class="form-group">
               <label for="username">Nombre de usuario</label>
               <div class="input-container">
                 <span class="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                 </span>
-                <input 
-                  type="text" 
-                  id="username" 
-                  v-model="username" 
+                <input
+                  type="text"
+                  id="username"
+                  v-model="username"
                   placeholder="Introduce tu nombre de usuario"
                   data-cy="username"
                   required
-                >
+                />
               </div>
             </div>
-            
+
             <div class="form-group">
               <label for="password">Contraseña</label>
               <div class="input-container">
                 <span class="input-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="3"
+                      y="11"
+                      width="18"
+                      height="11"
+                      rx="2"
+                      ry="2"
+                    ></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                 </span>
-                <input 
-                  type="password" 
-                  id="password" 
-                  v-model="password" 
+                <input
+                  type="password"
+                  id="password"
+                  v-model="password"
                   placeholder="Introduce tu contraseña"
                   data-cy="password"
                   required
-                >
+                />
               </div>
             </div>
-            
-            <button 
-              type="submit" 
-              class="login-button" 
+
+            <button
+              type="submit"
+              class="login-button"
               data-cy="login-button"
               :disabled="isLoading"
             >
               <span v-if="isLoading" class="loading-spinner"></span>
-              {{ isLoading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+              {{ isLoading ? "Iniciando sesión..." : "Iniciar sesión" }}
             </button>
           </form>
-          
+
           <div class="login-footer">
             <router-link to="/" class="back-link">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
               </svg>
@@ -91,52 +130,52 @@
 </template>
 
 <script>
-import { useAuthStore } from '@/stores/auth'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useAuthStore } from "@/stores/auth";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 export default {
-  name: 'LoginView',
+  name: "LoginView",
   setup() {
-    const username = ref('')
-    const password = ref('')
-    const error = ref('')
-    const isLoading = ref(false)
-    const router = useRouter()
-    const authStore = useAuthStore()
+    const username = ref("");
+    const password = ref("");
+    const error = ref("");
+    const isLoading = ref(false);
+    const router = useRouter();
+    const authStore = useAuthStore();
 
     const handleLogin = async () => {
       try {
-        error.value = ''
-        isLoading.value = true
-        
-        await authStore.login(username.value, password.value)
-        
+        error.value = "";
+        isLoading.value = true;
+
+        await authStore.login(username.value, password.value);
+
         // Redirigir al usuario a la página principal después del inicio de sesión exitoso
-        router.push({ name: 'adminhome'})
+        router.push({ name: "home" });
       } catch (err) {
-        error.value = err.response?.data?.non_field_errors?.[0] ||
-                      'Error: Invalid username or password'
-        console.error('Error de inicio de sesión:', err)
+        error.value =
+          err.response?.data?.non_field_errors?.[0] ||
+          "Error: Invalid username or password";
+        console.error("Error de inicio de sesión:", err);
       } finally {
-        isLoading.value = false
+        isLoading.value = false;
       }
-    }
+    };
 
     return {
       username,
       password,
       error,
       isLoading,
-      handleLogin
-    }
-  }
-}
+      handleLogin,
+    };
+  },
+};
 </script>
-
 <style scoped>
-
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -147,7 +186,7 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .login-container {
@@ -183,11 +222,14 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+  background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05) 25%,
+      transparent 25%
+    ),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
   background-size: 60px 60px;
   background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
   opacity: 0.4;
@@ -324,13 +366,18 @@ html, body {
 }
 
 .login-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: 0.5s;
 }
 
@@ -428,68 +475,197 @@ html, body {
   height: 350px;
 }
 
-/* Responsive */
+/* Media Queries mejoradas para responsive */
 @media (max-width: 1200px) {
-
-  
   .login-brand {
-    font-size: 48px;
+    font-size: 42px;
   }
-  
+
   .login-tagline {
-    font-size: 20px;
+    font-size: 18px;
   }
-  
-  .chess-piece-icon {
-    width: 100px;
-    height: 100px;
+
+  .login-card {
+    padding: 40px;
   }
 }
 
 @media (max-width: 992px) {
   .login-background {
     flex-direction: column;
+    min-height: auto;
   }
-  
-  .login-left {
-    flex: 1;
-    min-width: 50%; /* Añadir esto */
-    width: 50%; /* Añadir esto */
-    height: 250px;
 
+  .login-left {
+    padding: 30px 20px;
+    height: auto;
+    min-height: 200px;
   }
-  
+
+  .login-right {
+    padding: 40px 20px;
+    align-items: flex-start;
+  }
+
   .login-brand {
-    font-size: 40px;
+    font-size: 32px;
+    margin-bottom: 10px;
   }
-  
+
   .login-tagline {
-    font-size: 18px;
-    margin-bottom: 0;
+    font-size: 16px;
+    max-width: 100%;
   }
-  
+
   .chess-piece-icon {
-    display: none;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+  }
+
+  .login-card {
+    max-width: 100%;
+    margin-top: -50px;
+    padding: 30px;
+  }
+
+  .login-title {
+    font-size: 28px;
+  }
+
+  .login-subtitle {
+    font-size: 16px;
+    margin-bottom: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-left {
+    min-height: 180px;
+  }
+
+  .login-brand {
+    font-size: 28px;
+  }
+
+  .login-tagline {
+    font-size: 15px;
+  }
+
+  .login-card {
+    padding: 25px;
+    margin-top: -30px;
+  }
+
+  .login-form {
+    gap: 20px;
+  }
+
+  .form-group input {
+    padding: 14px 20px 14px 50px;
+    font-size: 15px;
+  }
+
+  .login-button {
+    padding: 16px;
+    font-size: 16px;
   }
 }
 
 @media (max-width: 576px) {
+  .login-left {
+    padding: 20px 15px;
+    min-height: 150px;
+  }
+
+  .login-brand {
+    font-size: 24px;
+  }
+
+  .login-tagline {
+    font-size: 14px;
+  }
+
   .login-right {
-    padding: 20px;
-    width: 100%;
+    padding: 30px 15px;
   }
-  
+
   .login-card {
-    padding: 30px 20px;
+    padding: 20px 15px;
+    border-radius: 16px;
+    margin-top: -20px;
   }
-  
+
   .login-title {
-    font-size: 28px;
+    font-size: 24px;
   }
-  
+
   .login-subtitle {
-    font-size: 16px;
-    margin-bottom: 30px;
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+  }
+
+  .input-icon {
+    left: 15px;
+  }
+
+  .form-group input {
+    padding: 12px 15px 12px 45px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+
+  .login-button {
+    padding: 14px;
+    font-size: 15px;
+    margin-top: 15px;
+  }
+
+  .error-message {
+    font-size: 14px;
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+
+  .back-link {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 400px) {
+  .login-left {
+    min-height: 120px;
+  }
+
+  .login-brand {
+    font-size: 20px;
+  }
+
+  .chess-piece-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+  }
+
+  .login-title {
+    font-size: 22px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+  }
+
+  .form-group input {
+    padding: 10px 12px 10px 40px;
+  }
+
+  .input-icon {
+    width: 16px;
+    height: 16px;
   }
 }
 </style>

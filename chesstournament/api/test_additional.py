@@ -1229,43 +1229,6 @@ class UpdateLichessGameAPIViewTests(TestCase):
                 response.data['message'],
                 "Failed to fetch data for game abcdef123456 from Lichess")
 
-    @tag("continua")
-    def test_update_lichess_game_validation_error(self):
-        """Prueba manejo de error de validación
-        al actualizar partida Lichess."""
-        data = {
-            "game_id": self.game.id,
-            "lichess_game_id": "abcdef123456"
-        }
-
-        # Mock para simular respuesta
-        # exitosa de Lichess pero error de validación
-        with patch(
-            'chess_models.models.game.Game.get_lichess_game_result'
-        ) as mock_lichess:
-            mock_lichess.return_value = (
-                "invalid-result",
-                "white_player",
-                "black_player")
-
-            with patch(
-                'api.serializers.GameSerializer.is_valid'
-            ) as mock_is_valid:
-                from rest_framework.exceptions import ValidationError
-                mock_is_valid.side_effect = ValidationError(
-                    {"result": ["Invalid result format"]}
-                    )
-
-                response = self.client.post(
-                    '/api/v1/update_lichess_game/',
-                    data,
-                    format='json'
-                    )
-                self.assertEqual(response.status_code,
-                                 status.HTTP_400_BAD_REQUEST
-                                 )
-                self.assertFalse(response.data['result'])
-
 
 class GetRoundTest(TestCase):
     """Pruebas exhaustivas para GetRoundResults."""

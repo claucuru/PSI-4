@@ -1,111 +1,116 @@
 // src/stores/auth.js
-import axios from 'axios'
-import { defineStore } from 'pinia'
-import router from '../router'
+import axios from "axios";
+import { defineStore } from "pinia";
+import router from "../router";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: null,
-    user:  null,
+    user: null,
     loading: false,
-    error: null
+    error: null,
   }),
-  
+
   getters: {
     isAuthenticated: (state) => !!state.token,
     getToken: (state) => state.token,
-    getUser: (state) => state.user
+    getUser: (state) => state.user,
   },
-  
+
   actions: {
     async login(username, password) {
-      this.loading = true
-      this.error = null
-      
+      this.loading = true;
+      this.error = null;
+
       try {
         // Usando la API de Django con djoser para autenticación
-        const response = await axios.post('http://localhost:8001/api/v1/token/login/', {
+        const response = await axios.post("/token/login/", {
           username,
-          password
-        })
-        
+          password,
+        });
+
         // Guardar el token en el estado y localStorage
-        this.token = response.data.auth_token
-        
+        this.token = response.data.auth_token;
+
         // Obtener información del usuario
-        await this.fetchUserProfile()
-        
+        await this.fetchUserProfile();
+
         // Redireccionar a la página inicial
-        router.push('/')
-        return true
+        router.push("/");
+        return true;
       } catch (err) {
-        this.error = err.response?.data?.non_field_errors?.[0] || 'Error de autenticación'
-        return false
+        this.error =
+          err.response?.data?.non_field_errors?.[0] || "Error de autenticación";
+        return false;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
-    
+
     async fetchUserProfile() {
       try {
-        const response = await axios.get('http://localhost:8001/api/v1/users/me/', {
+        const response = await axios.get("/users/me/", {
           headers: {
-            'Authorization': `Token ${this.token}`
-          }
-        })
-        
+            Authorization: `Token ${this.token}`,
+          },
+        });
+
         // Recuperar la foto del usuario desde localStorage
-        const savedPhotoUrl = localStorage.getItem(`userPhoto_${response.data.username}`)
-        
+        const savedPhotoUrl = localStorage.getItem(
+          `userPhoto_${response.data.username}`
+        );
+
         // Asegúrate de que photoUrl esté disponible en el usuario
         this.user = {
           ...response.data,
-          photoUrl: response.data.photoUrl || savedPhotoUrl || null
-        }
-        
-        return this.user
+          photoUrl: response.data.photoUrl || savedPhotoUrl || null,
+        };
+
+        return this.user;
       } catch (err) {
-        console.error('Error al obtener perfil de usuario:', err)
-        return null
+        console.error("Error al obtener perfil de usuario:", err);
+        return null;
       }
     },
-    
+
     async logout() {
-      this.loading = true
-      
+      this.loading = true;
+
       try {
         // Envía la solicitud de logout al servidor
-        await axios.post('http://localhost:8001/api/v1/token/logout/', {}, {
-          headers: {
-            'Authorization': `Token ${this.token}`,
-            'Content-Type': 'application/json'
+        await axios.post(
+          "/token/logout/",
+          {},
+          {
+            headers: {
+              Authorization: `Token ${this.token}`,
+              "Content-Type": "application/json",
+            },
           }
-        })
+        );
       } catch (err) {
-        console.error('Error al hacer logout:', err)
+        console.error("Error al hacer logout:", err);
       } finally {
         // Independientemente de la respuesta del servidor, limpiamos localmente
-        this.clearAuth()
-        this.loading = false
-        
+        this.clearAuth();
+        this.loading = false;
+
         // Redireccionar a la página de logout
-        router.push('/logout')
+        router.push("/logout");
       }
     },
-    
+
     clearAuth() {
       // Limpiar el estado
       // Nota: NO eliminamos las fotos de perfil guardadas para conservarlas entre sesiones
-      this.token = null
-      this.user = null
-      this.loading = false
-      this.error = null
-      
+      this.token = null;
+      this.user = null;
+
       // Limpiar solo el token y el usuario actual del localStorage
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
-    
+
     // Método para actualizar la foto de perfil
     async updateUserPhoto(photoUrl) {
       try {
@@ -113,21 +118,21 @@ export const useAuthStore = defineStore('auth', {
           // Actualizar el objeto de usuario en el store
           this.user = {
             ...this.user,
-            photoUrl
-          }
-          
+            photoUrl,
+          };
+
           // Guardar la foto asociada al nombre de usuario
           if (this.user.username) {
-            localStorage.setItem(`userPhoto_${this.user.username}`, photoUrl)
+            localStorage.setItem(`userPhoto_${this.user.username}`, photoUrl);
           }
-          
-          return true
+
+          return true;
         }
-        return false
+        return false;
       } catch (err) {
-        console.error('Error al actualizar la foto de perfil:', err)
-        return false
+        console.error("Error al actualizar la foto de perfil:", err);
+        return false;
       }
-    }
-  }
-})
+    },
+  },
+});

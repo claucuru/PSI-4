@@ -144,10 +144,10 @@ jrcuesta, jrcuesta@example.com
 
     /// DESCOMENTADAS POR NOSOTRAS LAS SIGUIENTES DOS LINEAS
     // Go to main page and...
-     cy.visit('/') // if you do this token is lost
+    cy.visit("/"); // if you do this token is lost
     //               // and you need to clean it in the store
     // ... select tournament
-    cy.get('[data-cy=tournament_SR]').click();
+    cy.get("[data-cy=tournament_SR]").click();
 
     // Now we are in the games page
     games.forEach((tuple, index) => {

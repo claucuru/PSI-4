@@ -167,17 +167,17 @@ def getScores(tournament):
     for tournament_round in tournament_rounds:
         games = Game.objects.filter(round=tournament_round)
         for game in games:
-            if game.result == 'W':
+            if game.result == 'W' or game.result ==  Scores.WHITE.value:
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.win_points
                 if game.black in results:
                     results[game.black][PLAIN_SCORE] += tournament.lose_points
-            elif game.result == 'B':
+            elif game.result == 'B'  or game.result ==  Scores.BLACK.value:
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.lose_points
                 if game.black in results:
                     results[game.black][PLAIN_SCORE] += tournament.win_points
-            elif game.result == 'D':
+            elif game.result == 'D'  or game.result ==  Scores.DRAW.value:
                 if game.white in results:
                     results[game.white][PLAIN_SCORE] += tournament.draw_points
                 if game.black in results:
@@ -224,17 +224,17 @@ def getBlackWins(tournament, results):
                 Scores.BYE_F.value, Scores.BYE_H.value,
                 Scores.BYE_U.value, Scores.BYE_Z.value
             ]:
-                if game.result == 'W':
+                if game.result == 'W'  or game.result ==  Scores.WHITE.value:
                     if game.white in results:
                         results[game.white][WINS] += 1
                     if game.black in results:
                         results[game.black][BLACKTIMES] += 1
-                if game.result == 'B':
+                if game.result == 'B'  or game.result ==  Scores.BLACK.value:
                     if game.black in results:
                         results[game.black][WINS] += 1
                     if game.black in results:
                         results[game.black][BLACKTIMES] += 1
-                if game.result == 'D':
+                if game.result == 'D'  or game.result ==  Scores.DRAW.value:
                     if game.black in results:
                         results[game.black][BLACKTIMES] += 1
 

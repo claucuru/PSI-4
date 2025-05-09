@@ -5,7 +5,9 @@
       <div class="chess-tournament-bg">
         <div class="chess-tournament-content">
           <h1 class="confirmation-brand">¡Torneo Creado!</h1>
-          <p class="confirmation-tagline">Tu competencia de ajedrez está lista</p>
+          <p class="confirmation-tagline">
+            Tu competencia de ajedrez está lista
+          </p>
         </div>
       </div>
 
@@ -16,7 +18,9 @@
         </div>
         <div v-else-if="error" class="error-message">
           <p>{{ error }}</p>
-          <button class="secondary-btn" @click="goHome">Volver al inicio</button>
+          <button class="secondary-btn" @click="goHome">
+            Volver al inicio
+          </button>
         </div>
         <div v-else>
           <div class="success-header">
@@ -27,7 +31,9 @@
           <div class="details-card">
             <div class="card-header">
               <h3 class="tournament-name">{{ tournament.name }}</h3>
-              <p class="tournament-date">Fecha de inicio: {{ formatDate(tournament.start_date) }}</p>
+              <p class="tournament-date">
+                Fecha de inicio: {{ formatDate(tournament.start_date) }}
+              </p>
             </div>
 
             <div class="details-section">
@@ -35,19 +41,29 @@
               <div class="details-grid">
                 <div class="detail-item">
                   <span class="detail-label">Sistema de emparejamiento</span>
-                  <span class="detail-value">{{ getPairingSystemName(tournament.tournament_type) }}</span>
+                  <span class="detail-value">{{
+                    getPairingSystemName(tournament.tournament_type)
+                  }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Tipo de tablero</span>
-                  <span class="detail-value">{{ getBoardTypeName(tournament.board_type) }}</span>
+                  <span class="detail-value">{{
+                    getBoardTypeName(tournament.board_type)
+                  }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Velocidad del torneo</span>
-                  <span class="detail-value">{{ getSpeedName(tournament.tournament_speed) }}</span>
+                  <span class="detail-value">{{
+                    getSpeedName(tournament.tournament_speed)
+                  }}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label">Administración</span>
-                  <span class="detail-value">{{ tournament.onlyAdminCanUpdate ? 'Solo administrador' : 'Todos pueden actualizar' }}</span>
+                  <span class="detail-value">{{
+                    tournament.onlyAdminCanUpdate
+                      ? "Solo administrador"
+                      : "Todos pueden actualizar"
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -56,15 +72,21 @@
               <h4 class="section-title">Puntuación</h4>
               <div class="points-grid">
                 <div class="point-item">
-                  <div class="point-circle win">{{ tournament.win_points }}</div>
+                  <div class="point-circle win">
+                    {{ tournament.win_points }}
+                  </div>
                   <span class="point-label">Victoria</span>
                 </div>
                 <div class="point-item">
-                  <div class="point-circle draw">{{ tournament.draw_points }}</div>
+                  <div class="point-circle draw">
+                    {{ tournament.draw_points }}
+                  </div>
                   <span class="point-label">Empate</span>
                 </div>
                 <div class="point-item">
-                  <div class="point-circle lose">{{ tournament.lose_points }}</div>
+                  <div class="point-circle lose">
+                    {{ tournament.lose_points }}
+                  </div>
                   <span class="point-label">Derrota</span>
                 </div>
               </div>
@@ -73,25 +95,43 @@
             <div class="details-section">
               <h4 class="section-title">Métodos de ranking</h4>
               <div class="ranking-methods">
-                <div class="method-chip" v-for="(method, index) in displayRankingMethods" :key="index">
+                <div
+                  class="method-chip"
+                  v-for="(method, index) in displayRankingMethods"
+                  :key="index"
+                >
                   {{ getRankingMethodName(method) }}
                 </div>
               </div>
             </div>
 
             <div class="details-section">
-              <h4 class="section-title">Jugadores ({{ tournamentPlayers.length }})</h4>
+              <h4 class="section-title">
+                Jugadores ({{ tournamentPlayers.length }})
+              </h4>
               <div class="players-list">
-                <div class="player-item" v-for="(player, index) in tournamentPlayers" :key="index">
-                  <div class="player-avatar">{{ getPlayerInitials(player) }}</div>
-                  <span class="player-name">{{ player.name || player.lichess_username }}</span>
+                <div
+                  class="player-item"
+                  v-for="(player, index) in tournamentPlayers"
+                  :key="index"
+                >
+                  <div class="player-avatar">
+                    {{ getPlayerInitials(player) }}
+                  </div>
+                  <span class="player-name">{{
+                    player.name || player.lichess_username
+                  }}</span>
                 </div>
               </div>
             </div>
 
             <div class="action-buttons">
-              <button class="secondary-btn" @click="goHome">Volver al inicio</button>
-              <button class="primary-btn" @click="goToTournament">Ir al torneo</button>
+              <button class="secondary-btn" @click="goHome">
+                Volver al inicio
+              </button>
+              <button class="primary-btn" @click="goToTournament">
+                Ir al torneo
+              </button>
             </div>
           </div>
         </div>
@@ -101,58 +141,66 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios'; // Asegúrate de importar axios o tu cliente HTTP preferido
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios"; // Asegúrate de importar axios o tu cliente HTTP preferido
 
 export default {
-  name: 'TournamentConfirmation',
+  name: "TournamentConfirmation",
   setup() {
     const tournament = ref({
       id: null,
-      name: '',
-      tournament_type: '',
-      board_type: '',
-      tournament_speed: '',
+      name: "",
+      tournament_type: "",
+      board_type: "",
+      tournament_speed: "",
       onlyAdminCanUpdate: true,
       win_points: 0,
       draw_points: 0,
       lose_points: 0,
-      start_date: '',
-      ranking_methods: []
+      start_date: "",
+      ranking_methods: [],
     });
     const tournamentPlayers = ref([]);
     const rankingMethods = computed(() => {
-      if (tournament.value.rankingList && Array.isArray(tournament.value.rankingList)) {
+      if (
+        tournament.value.rankingList &&
+        Array.isArray(tournament.value.rankingList)
+      ) {
         return tournament.value.rankingList;
-      } else if (tournament.value.ranking_methods && Array.isArray(tournament.value.ranking_methods)) {
-        return tournament.value.ranking_methods.map(m => m.value || m);
-      } else if (tournament.value.ranking_methods && typeof tournament.value.ranking_methods === 'string') {
+      } else if (
+        tournament.value.ranking_methods &&
+        Array.isArray(tournament.value.ranking_methods)
+      ) {
+        return tournament.value.ranking_methods.map((m) => m.value || m);
+      } else if (
+        tournament.value.ranking_methods &&
+        typeof tournament.value.ranking_methods === "string"
+      ) {
         // Si ranking_methods es un string, separamos por comas o lo convertimos en array
-        return tournament.value.ranking_methods.split(',').map(m => m.trim());
+        return tournament.value.ranking_methods.split(",").map((m) => m.trim());
       }
       return [];
     });
-    
+
     // Métodos de ranking para mostrar en pantalla (asegura que siempre haya algo)
     const displayRankingMethods = computed(() => {
       if (rankingMethods.value && rankingMethods.value.length > 0) {
         return rankingMethods.value;
       }
       // Valores por defecto si no hay métodos definidos
-      return ['BU', 'BC', 'SB'];
+      return ["BU", "BC", "SB"];
     });
-    
+
     const loading = ref(true);
     const error = ref(null);
     const route = useRoute();
     const router = useRouter();
-    const apiBaseUrl = "http://localhost:8001/api/v1";
 
     onMounted(async () => {
       // Obtenemos el ID del torneo de los parámetros de la ruta
       const tournamentId = route.params.id;
-      
+
       // Si tenemos datos de torneo en los params de la ruta, los usamos
       if (route.params.tournament) {
         tournament.value = route.params.tournament;
@@ -160,96 +208,97 @@ export default {
         loading.value = false;
         return;
       }
-      
+
       // Si no hay datos en los params, cargamos los datos del torneo desde la API
       try {
         await fetchTournamentDetails(tournamentId);
         await fetchTournamentPlayers(tournamentId);
         loading.value = false;
       } catch (err) {
-        console.error('Error al cargar los datos del torneo:', err);
-        error.value = 'No se pudieron cargar los detalles del torneo. Por favor, inténtalo de nuevo.';
+        console.error("Error al cargar los datos del torneo:", err);
+        error.value =
+          "No se pudieron cargar los detalles del torneo. Por favor, inténtalo de nuevo.";
         loading.value = false;
       }
     });
 
     const fetchTournamentDetails = async (tournamentId) => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/tournaments/${tournamentId}/`);
+        const response = await axios.get(`/tournaments/${tournamentId}/`);
         tournament.value = response.data;
         console.log("Torneo cargado:", tournament.value); // Depuración
       } catch (error) {
-        console.error('Error fetching tournament details:', error);
-        throw new Error('No se pudo obtener la información del torneo');
+        console.error("Error fetching tournament details:", error);
+        throw new Error("No se pudo obtener la información del torneo");
       }
     };
 
     const fetchTournamentPlayers = async (tournamentId) => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/get_players/${tournamentId}/`);
+        const response = await axios.get(`/get_players/${tournamentId}/`);
         tournamentPlayers.value = response.data;
       } catch (error) {
-        console.error('Error fetching tournament players:', error);
-        throw new Error('No se pudo obtener la lista de jugadores');
+        console.error("Error fetching tournament players:", error);
+        throw new Error("No se pudo obtener la lista de jugadores");
       }
     };
 
     const formatDate = (dateString) => {
-      if (!dateString) return '';
-      
+      if (!dateString) return "";
+
       const date = new Date(dateString);
-      return date.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
+      return date.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
       });
     };
 
     const getPairingSystemName = (code) => {
-      if (!code) return 'No especificado';
-      
+      if (!code) return "No especificado";
+
       const systems = {
-        'SW': 'Sistema Suizo',
-        'SR': 'Round Robin Simple',
-        'DR': 'Round Robin Doble',
-        'DD': 'Round Robin Doble (mismo día)'
+        SW: "Sistema Suizo",
+        SR: "Round Robin Simple",
+        DR: "Round Robin Doble",
+        DD: "Round Robin Doble (mismo día)",
       };
       return systems[code] || code;
     };
 
     const getBoardTypeName = (code) => {
-      if (!code) return 'No especificado';
-      
+      if (!code) return "No especificado";
+
       const types = {
-        'LIC': 'Lichess (Online)',
-        'OTB': 'Presencial (OTB)'
+        LIC: "Lichess (Online)",
+        OTB: "Presencial (OTB)",
       };
       return types[code] || code;
     };
 
     const getSpeedName = (code) => {
-      if (!code) return 'No especificado';
-      
+      if (!code) return "No especificado";
+
       const speeds = {
-        'CL': 'Clásico',
-        'RA': 'Rápido',
-        'BL': 'Blitz',
-        'BU': 'Bullet'
+        CL: "Clásico",
+        RA: "Rápido",
+        BL: "Blitz",
+        BU: "Bullet",
       };
       return speeds[code] || code;
     };
 
     const getRankingMethodName = (code) => {
-      if (!code) return 'No especificado';
-      
+      if (!code) return "No especificado";
+
       const methods = {
-        'BU': 'Buchholz',
-        'BC': 'Buchholz cut 1',
-        'BA': 'Buchholz average',
-        'SB': 'Sonneborn-Berger',
-        'PS': 'Plain Score',
-        'WI': 'Victorias',
-        'BT': 'Juegos con negras'
+        BU: "Buchholz",
+        BC: "Buchholz cut 1",
+        BA: "Buchholz average",
+        SB: "Sonneborn-Berger",
+        PS: "Plain Score",
+        WI: "Victorias",
+        BT: "Juegos con negras",
       };
       return methods[code] || code;
     };
@@ -261,11 +310,11 @@ export default {
       if (player.lichess_username && player.lichess_username.length > 0) {
         return player.lichess_username.charAt(0).toUpperCase();
       }
-      return '?';
+      return "?";
     };
 
     const goHome = () => {
-      router.push('/');
+      router.push("/");
     };
 
     const goToTournament = () => {
@@ -286,10 +335,10 @@ export default {
       getRankingMethodName,
       getPlayerInitials,
       goHome,
-      goToTournament
+      goToTournament,
     };
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
@@ -308,7 +357,7 @@ export default {
 /* Sección izquierda con imagen de fondo */
 .chess-tournament-bg {
   width: 40%;
-  background-image: url('../components/icons/chess.jpg');
+  background-image: url("../components/icons/chess.jpg");
   background-size: cover;
   background-position: center;
   display: flex;
@@ -319,7 +368,7 @@ export default {
 
 /* Capa oscura para mejorar legibilidad del texto */
 .chess-tournament-bg::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -606,12 +655,12 @@ export default {
   .chess-tournament-bg {
     width: 35%;
   }
-  
+
   .tournament-details {
     width: 65%;
     padding: 30px;
   }
-  
+
   .details-title {
     font-size: 24px;
   }
@@ -621,17 +670,17 @@ export default {
   .confirmation-background {
     flex-direction: column;
   }
-  
+
   .chess-tournament-bg {
     width: 100%;
     height: 180px;
   }
-  
+
   .tournament-details {
     width: 100%;
     padding: 30px 20px;
   }
-  
+
   .confirmation-brand {
     font-size: 30px;
   }
@@ -642,16 +691,17 @@ export default {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
-  .secondary-btn, .primary-btn {
+
+  .secondary-btn,
+  .primary-btn {
     width: 100%;
     text-align: center;
   }
-  
+
   .players-list {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
@@ -661,42 +711,42 @@ export default {
   .tournament-details {
     padding: 20px 15px;
   }
-  
+
   .details-card {
     padding: 20px;
   }
-  
+
   .chess-tournament-bg {
     height: 150px;
   }
-  
+
   .confirmation-brand {
     font-size: 24px;
   }
-  
+
   .confirmation-tagline {
     font-size: 14px;
   }
-  
+
   .success-icon {
     width: 40px;
     height: 40px;
     font-size: 20px;
   }
-  
+
   .points-grid {
     flex-direction: column;
     align-items: center;
     gap: 15px;
   }
-  
+
   .point-item {
     flex-direction: row;
     width: 100%;
     justify-content: flex-start;
     gap: 15px;
   }
-  
+
   .point-circle {
     width: 45px;
     height: 45px;
@@ -709,11 +759,11 @@ export default {
   .details-title {
     font-size: 20px;
   }
-  
+
   .section-title {
     font-size: 16px;
   }
-  
+
   .confirmation-brand {
     font-size: 20px;
   }

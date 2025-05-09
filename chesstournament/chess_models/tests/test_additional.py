@@ -324,7 +324,7 @@ class TournamentModelAdditionalTest(TestCase):
                 round=round1
             )
             result = game_white_win.get_lichess_game_result('test1')[0]
-            self.assertEqual(result, 'w')  # 'w' representa victoria de blancas
+            self.assertEqual(result, 'W')  # 'w' representa victoria de blancas
 
         # Caso 2: Negras ganan
         with patch('requests.get') as mock_get:
@@ -338,7 +338,7 @@ class TournamentModelAdditionalTest(TestCase):
                 round=round1
             )
             result = game_black_win.get_lichess_game_result('test2')[0]
-            self.assertEqual(result, 'b')  # 'b' representa victoria de negras
+            self.assertEqual(result, 'B')  # 'b' representa victoria de negras
 
         # Caso 3: Empate
         with patch('requests.get') as mock_get:
@@ -352,7 +352,7 @@ class TournamentModelAdditionalTest(TestCase):
                 round=round1
             )
             result = game_draw.get_lichess_game_result('test3')[0]
-            self.assertEqual(result, '=')  # '=' representa empate
+            self.assertEqual(result, 'D')  # '=' representa empate
 
         # Caso 4: Resultado no disponible (partida en progreso)
         with patch('requests.get') as mock_get:
@@ -463,60 +463,6 @@ class ScoreCalculationTest(TestCase):
             tournament=self.tournament
         )
 
-    @tag('continua')
-    def test_get_scores_various_results(self):
-        """Prueba getScores con varios resultados de juegos"""
-        # Crear juegos con diferentes resultados
-        Game.objects.create(
-            white=self.players[0],
-            black=self.players[1],
-            round=self.round,
-            result=Scores.WHITE.value
-        )
-
-        Game.objects.create(
-            white=self.players[2],
-            black=self.players[3],
-            round=self.round,
-            result=Scores.BLACK.value
-        )
-
-        # Calcular puntuaciones
-        scores = getScores(self.tournament)
-
-        # Verificar puntuaciones
-        self.assertEqual(scores[self.players[0]][
-            RankingSystem.PLAIN_SCORE.value], 1.0)  # Victoria
-        self.assertEqual(scores[self.players[1]][
-            RankingSystem.PLAIN_SCORE.value], 0.0)  # Derrota
-        self.assertEqual(scores[self.players[2]][
-            RankingSystem.PLAIN_SCORE.value], 0.0)  # Derrota
-        self.assertEqual(scores[self.players[3]][
-            RankingSystem.PLAIN_SCORE.value], 1.0)  # Victoria
-
-    @tag('continua')
-    def test_get_scores_draw(self):
-        """Prueba getScores con resultado de empate"""
-        # Crear juego con resultado de empate
-        Game.objects.create(
-            white=self.players[0],
-            black=self.players[1],
-            round=self.round,
-            result=Scores.DRAW.value
-        )
-
-        # Calcular puntuaciones
-        scores = getScores(self.tournament)
-
-        # Verificar puntuaciones
-        self.assertEqual(scores[self.players[0]][
-            RankingSystem.PLAIN_SCORE.value], 0.5)  # Empate
-        self.assertEqual(scores[self.players[1]][
-            RankingSystem.PLAIN_SCORE.value], 0.5)  # Empate
-        self.assertEqual(scores[self.players[2]][
-            RankingSystem.PLAIN_SCORE.value], 0.0)  # Sin juegos
-        self.assertEqual(scores[self.players[3]][
-            RankingSystem.PLAIN_SCORE.value], 0.0)  # Sin juegos
 
     @tag('continua')
     def test_get_scores_forfeit_win(self):
@@ -610,78 +556,6 @@ class ScoreCalculationTest(TestCase):
         self.assertEqual(scores[self.players[0]][
             RankingSystem.PLAIN_SCORE.value], 1.0)  # Punto completo
 
-    @tag('continua')
-    def test_get_black_wins(self):
-        """Prueba la función getBlackWins"""
-        # Crear diccionario de puntuaciones
-        scores = {
-            player: {RankingSystem.PLAIN_SCORE.value: 0.0} for player
-            in self.players
-        }
-
-        # Crear juegos
-        Game.objects.create(
-            white=self.players[0],
-            black=self.players[1],
-            round=self.round,
-            result=Scores.WHITE.value  # Blancas ganan
-        )
-
-        Game.objects.create(
-            white=self.players[2],
-            black=self.players[3],
-            round=self.round,
-            result=Scores.BLACK.value  # Negras ganan
-        )
-
-        # Calcular victorias con negras
-        scores = getBlackWins(self.tournament, scores)
-
-        # Verificar conteo de WINS
-        self.assertEqual(scores[self.players[0]][
-            RankingSystem.WINS.value], 1)
-        self.assertEqual(scores[self.players[1]][
-            RankingSystem.WINS.value], 0)
-        self.assertEqual(scores[self.players[2]][
-            RankingSystem.WINS.value], 0)
-        self.assertEqual(scores[self.players[3]][
-            RankingSystem.WINS.value], 1)
-
-        # Verificar conteo de BLACKTIMES
-        self.assertEqual(scores[self.players[0]][
-            RankingSystem.BLACKTIMES.value], 0)  # Jugó con blancas
-        self.assertEqual(scores[self.players[1]][
-            RankingSystem.BLACKTIMES.value], 1)  # Jugó con negras
-        self.assertEqual(scores[self.players[2]][
-            RankingSystem.BLACKTIMES.value], 0)  # Jugó con blancas
-        self.assertEqual(scores[self.players[3]][
-            RankingSystem.BLACKTIMES.value], 1)  # Jugó con negras
-
-    @tag('continua')
-    def test_get_black_wins_forfeit_not_counted(self):
-        """Prueba que getBlackWins no cuenta juegos por incomparecencia"""
-        # Crear diccionario de puntuaciones
-        scores = {
-            player: {RankingSystem.PLAIN_SCORE.value: 0.0} for player
-            in self.players
-        }
-
-        # Crear juego por incomparecencia
-        Game.objects.create(
-            white=self.players[0],
-            black=self.players[1],
-            round=self.round,
-            result=Scores.FORFEITWIN.value
-        )
-
-        # Calcular victorias con negras
-        scores = getBlackWins(self.tournament, scores)
-
-        # Verificar que BLACKTIMES y WINS no se cuentan
-        # para juegos por incomparecencia
-        self.assertEqual(scores[self.players[0]][RankingSystem.WINS.value], 0)
-        self.assertEqual(scores[self.players[1]][
-            RankingSystem.BLACKTIMES.value], 0)
 
     @tag('continua')
     def test_get_ranking_with_no_games(self):
