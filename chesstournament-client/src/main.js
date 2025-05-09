@@ -10,7 +10,8 @@ const DJANGO_URL = import.meta.env.VITE_DJANGO_URL;
 const RENDER_URL = import.meta.env.VITE_RENDER_URL;
 
 // Seleccionar URL base según variable de entorno de testing
-axios.defaults.baseURL = import.meta.env.VITE_TESTING === 'true' ? DJANGO_URL : RENDER_URL ;
+axios.defaults.baseURL =
+  import.meta.env.VITE_TESTING === "true" ? DJANGO_URL : RENDER_URL;
 
 alert(`Usando API: ${axios.defaults.baseURL}`);
 
