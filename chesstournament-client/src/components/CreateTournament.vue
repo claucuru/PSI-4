@@ -243,7 +243,7 @@ export default {
         win_points: 1.0,
         draw_points: 0.5,
         lose_points: 0.0,
-        ranking_methods: [], // This will store only the values (e.g., 'WI', 'BU')
+        ranking_methods: [],
         start_date: new Date().toISOString().split("T")[0], // Fecha actual para el inicio
       },
       playersText: "",

@@ -72,5 +72,5 @@ export default {
 </script>
 
 <style scoped>
-  @import '@/assets/log_out.css';
+@import '@/assets/log_out.css';
 </style>

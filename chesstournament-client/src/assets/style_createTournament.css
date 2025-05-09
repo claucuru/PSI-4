@@ -1,31 +1,29 @@
 .createtournament-container {
   min-height: 100vh;
-  width: 80vw;
+  width: 100vw; /* Usar todo el ancho de la ventana */
   background-color: #f8f9fa;
+  overflow: hidden;
 }
 
 .createtournament-background {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
 }
 
-/* Sección izquierda con imagen de fondo */
+/* Lado izquierdo: imagen */
 .chess-tournament-bg {
   width: 50%;
   background-image: url("../components/icons/chess.jpg");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed; /* Cambio clave: fijar posición */
-  left: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 1;
+  position: relative; /* ¡IMPORTANTE! Ya no es fixed */
 }
 
-/* Capa oscura para mejorar legibilidad del texto */
+/* Capa oscura sobre imagen */
 .chess-tournament-bg::before {
   content: "";
   position: absolute;
@@ -36,6 +34,7 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+/* Contenido dentro del fondo */
 .chess-tournament-content {
   text-align: center;
   max-width: 600px;
@@ -45,14 +44,14 @@
   color: white;
 }
 
-/* Formulario de creación */
+/* Formulario lado derecho */
 .create-tournament-form {
-  width: 60%;
+  width: 50%;
   padding: 40px;
   background-color: white;
   overflow-y: auto;
-  margin-left: 40%; /* Importante: añadir margen izquierdo igual al ancho de la columna fija */
 }
+
 
 .login-brand {
   font-size: 36px;

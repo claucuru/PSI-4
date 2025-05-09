@@ -17,14 +17,7 @@
   color: #000 !important;
 }
 
-.tournament-status-banner,
-.game-status,
-.rating,
-.round-date,
-.empty-state h3,
-.empty-state p,
-.error-state {
-}
+
 .tournament-details-page {
   min-height: 100vh;
   min-width: 100vw;

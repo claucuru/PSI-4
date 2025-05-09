@@ -727,7 +727,7 @@ export default {
         roundsLoading.value = false;
       }
     };
-    // Fixed version of the submitGameResultLic function
+
     const submitGameResultLic = async (roundId, game) => {
       alert("entra aqui");
 
@@ -745,7 +745,6 @@ export default {
           },
         });
 
-        // Preparar datos para enviar
         const gameData = {
           game_id: game.game_id,
           result: response.data.result,
@@ -754,23 +753,18 @@ export default {
 
         alert("Enviando datos de juego:", gameData);
 
-        // Get authentication token from store
         const authStore = useAuthStore();
         const token = authStore.getToken;
 
-        // Prepare headers with token
         const headers = {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         };
 
-        // Send the result based on user role
         if (!isAdmin.value) {
-          // For regular users
           const response = await axios.post(`/update_game/`, gameData);
           alert("Resultado enviado correctamente:", response.data);
         } else {
-          // For admins
           const response = await axios.post(`/admin_update_game/`, gameData, {
             headers,
           });
@@ -780,25 +774,21 @@ export default {
           );
         }
 
-        // Reload rankings after successful submission
         await loadRankings();
         game.result = formatGameResult(response.data.result);
 
         alert(game.result);
 
-        // Show success message
         alert(
           isAdmin.value
             ? "Resultado actualizado correctamente (como administrador)."
             : "Resultado enviado correctamente."
         );
 
-        // Mark game as finished
         game.finished = true;
       } catch (error) {
         alert("Error al enviar el resultado:", error);
 
-        // Show detailed error message
         let errorMessage =
           "Error al enviar el resultado. Por favor, inténtalo de nuevo.";
         if (error.response) {
@@ -816,11 +806,9 @@ export default {
       }
     };
 
-    // Function to format game result for display
     const formatGameResult = (result) => {
       if (!result) return "";
 
-      // For OTB games, format the result
       switch (result) {
         case "W":
           return "1-0";
@@ -942,7 +930,6 @@ export default {
 
         // Enviar los datos actualizados a la API
         const response = await axios.post(`/admin_update_game/`, {
-          // Asegúrate de incluir todos los campos necesarios en el cuerpo de la solicitud
           game_id: editingGame.value.game_id,
           result: resultCode,
           finished: editingGame.value.finished,

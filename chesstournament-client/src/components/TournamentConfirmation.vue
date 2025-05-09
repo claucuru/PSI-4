@@ -342,5 +342,5 @@ export default {
 </script>
 
 <style scoped>
-@import '@/assets/tournament_config.css';
+@import '@/assets/tournament_confir.css';
 </style>

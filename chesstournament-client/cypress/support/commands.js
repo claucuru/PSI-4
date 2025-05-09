@@ -135,6 +135,7 @@ Cypress.Commands.add("delete_all_tournaments", () => {
     '            print(f"No sequence found for {table_name}.{primary_key_column}")\n' +
     "reset_sequence('chess_models', 'Player')\n" +
     "reset_sequence('chess_models', 'Game')\n" +
+    // AÑADIDO Y COMENTADO CON EL PROFESOR, COMO TODOS LOS WAITS AÑADIDOS Y CAMBIOS REALIZADOS
     "reset_sequence('chess_models', 'Round')\n" +
     "reset_sequence('chess_models', 'Tournament')\n" +
     "# FRST reset sequence then delete not the other way around\n" +

@@ -258,8 +258,6 @@ export default {
       const reader = new FileReader();
       reader.onload = (e) => {
         user.value.photoUrl = e.target.result;
-        // Preferiblemente, aquí subirías la imagen al servidor
-        // y obtendrías la URL para almacenarla en el store
       };
       reader.readAsDataURL(file);
     };
